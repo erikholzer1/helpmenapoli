@@ -71,12 +71,8 @@
     }
     html { scroll-behavior: smooth; }
     .hero-text { display: flex; flex-direction: column; align-items: flex-start; }
-    .hero-logo-side { display: flex; align-items: flex-start; justify-content: flex-end; align-self: start; padding-top: 3.8rem; }
-    .hero-logo-side img { width: 240px; height: auto; display: block; opacity: 0.88; mix-blend-mode: screen; }
     @media(max-width:960px) {
-      .hero-content { grid-template-columns: 1fr; padding: 0 2rem; }
-      .hero-logo-side { display: none !important; }
-      .hero-text { align-items: flex-start; }
+      .hero-content { padding: 0 2rem; }
     }
     @media(max-width:640px) {
       .hero { min-height: auto !important; padding: 4rem 1.5rem 3rem !important; }
@@ -166,7 +162,7 @@ nav {
   padding: 0 5rem;
   animation: fadeUp 1s ease both;
   display: grid;
-  grid-template-columns: 1fr 260px;
+
   gap: 4rem;
   align-items: center;
 }
@@ -473,10 +469,7 @@ footer {
             <a href="about.html" class="btn-outline">Who I Am</a>
           </div>
       </div>
-      <div class="hero-logo-side">
-        <img src="logo-white.png" alt="HelpmeNapoli">
-      </div>
-    </div>
+</div>
   </section>
 
   <!-- INTRO STRIP -->

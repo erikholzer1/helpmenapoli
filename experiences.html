@@ -168,6 +168,16 @@
     .footer-social { display: flex; gap: 1rem; align-items: center; }
     .footer-social a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(212,168,67,0.25); color: rgba(255,255,255,0.5); text-decoration: none; transition: border-color 0.2s, color 0.2s, background 0.2s; }
     .footer-social a:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,0.08); }
+  
+    @media(max-width:640px){
+      .hero{padding:4rem 1.5rem 3rem !important;min-height:auto}
+      .hero h1{font-size:2rem !important;line-height:1.15}
+      .hero p{font-size:0.95rem}
+      .hero-logo-side{display:none !important}
+      nav{padding:1rem 1.5rem}
+      .nav-links{gap:1rem}
+      .nav-links a{font-size:0.75rem}
+    }
   </style>
 </head>
 <body>

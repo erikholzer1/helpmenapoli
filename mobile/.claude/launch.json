@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/erikholzer/Desktop/helpmenapoli/mobile", "run", "web"],
+      "port": 8081,
+      "autoPort": false
+    }
+  ]
+}

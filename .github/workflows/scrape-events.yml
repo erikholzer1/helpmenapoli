@@ -1,0 +1,50 @@
+name: Scrape Naples events
+
+# Runs the events scraper (mobile/scripts/scrape-events.mjs) every 24h + on
+# manual trigger. Writes to Supabase with the service-role key, which lives ONLY
+# as a GitHub Actions secret — never in the repo or the app.
+#
+# Setup (one time): Repo → Settings → Secrets and variables → Actions → add:
+#   SUPABASE_URL               = https://YOUR-PROJECT.supabase.co   (required)
+#   SUPABASE_SERVICE_ROLE_KEY  = Supabase → Settings → API → service_role (required)
+#   EVENTBRITE_TOKEN           = your Eventbrite private token       (optional)
+#   EVENTBRITE_ORG_IDS         = comma-separated org ids             (optional)
+#   BANDSINTOWN_APP_ID         = your Bandsintown app id             (optional)
+#   BANDSINTOWN_ARTISTS        = comma-separated artist list         (optional)
+# Then run it: Actions → "Scrape Naples events" → Run workflow.
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 04:00 UTC daily (~06:00 Naples)
+  workflow_dispatch: {}    # manual "Run workflow" button
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile   # the Expo app + scraper live here
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22          # >= 20.12 for process.loadEnvFile
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Install Playwright Chrome (for TicketOne + Dice)
+        # Real Chrome (not bundled Chromium) — its genuine TLS/HTTP2 fingerprint
+        # is what gets the stealth adapters past Akamai/Cloudflare.
+        run: npx playwright install --with-deps chrome
+
+      - name: Scrape & upsert events
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EVENTBRITE_TOKEN: ${{ secrets.EVENTBRITE_TOKEN }}
+          EVENTBRITE_ORG_IDS: ${{ secrets.EVENTBRITE_ORG_IDS }}
+          BANDSINTOWN_APP_ID: ${{ secrets.BANDSINTOWN_APP_ID }}
+          BANDSINTOWN_ARTISTS: ${{ secrets.BANDSINTOWN_ARTISTS }}
+        run: node scripts/scrape-events.mjs

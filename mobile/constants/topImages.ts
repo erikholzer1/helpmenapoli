@@ -1,0 +1,37 @@
+import { type ImageSourcePropType } from 'react-native';
+
+// Erik-provided category photos (from Claude Code/pictures). Keyed by list id.
+// Lists without a provided photo fall back to the remote `image` URL.
+export const topImages: Record<string, ImageSourcePropType> = {
+  pizzerias: require('@/assets/images/top10/pizzerias.webp'),
+  burgers: require('@/assets/images/top10/burgers.jpg'),
+  steakhouses: require('@/assets/images/top10/steakhouses.jpeg'),
+  seafood: require('@/assets/images/top10/seafood.jpeg'),
+  international: require('@/assets/images/top10/international.jpeg'),
+  finedining: require('@/assets/images/top10/finedining.webp'),
+  vibey: require('@/assets/images/top10/vibey.jpg'),
+  trattoria: require('@/assets/images/top10/trattoria.webp'),
+  streetfood: require('@/assets/images/top10/streetfood.jpeg'),
+  lunch: require('@/assets/images/top10/lunch.jpeg'),
+  healthy: require('@/assets/images/top10/healthy.jpeg'),
+  pastries: require('@/assets/images/top10/pastries.webp'),
+  cheese: require('@/assets/images/top10/cheese.jpg'),
+  brunch: require('@/assets/images/top10/brunch.jpg'),
+  coffee: require('@/assets/images/top10/coffee.jpg'),
+  aperitivo: require('@/assets/images/top10/aperitivo.jpg'),
+  winebars: require('@/assets/images/top10/winebars.jpg'),
+  beerbars: require('@/assets/images/top10/beerbars.webp'),
+  latenight: require('@/assets/images/top10/latenight.jpeg'),
+  pub: require('@/assets/images/top10/pub.webp'),
+  artisan: require('@/assets/images/top10/artisan.jpg'),
+  museums: require('@/assets/images/top10/museums.jpg'),
+  spas: require('@/assets/images/top10/spas.jpeg'),
+  parks: require('@/assets/images/top10/parks.jpg'),
+  markets: require('@/assets/images/top10/markets.jpg'),
+  beaches: require('@/assets/images/top10/beaches.jpeg'),
+  coworking: require('@/assets/images/top10/coworking.jpeg'),
+  clubs: require('@/assets/images/top10/clubs.jpg'),
+  theater: require('@/assets/images/top10/theater.jpg'),
+  daytrips: require('@/assets/images/top10/daytrips.webp'),
+  music: require('@/assets/images/top10/music.webp'),
+};

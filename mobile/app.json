@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "HelpMeNapoli",
+    "slug": "helpmenapoli",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo-color.png",
+    "scheme": "helpmenapoli",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/logo-white.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A1410"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.helpmenapoli.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo-color.png",
+        "backgroundColor": "#1A1410"
+      },
+      "package": "com.helpmenapoli.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/logo-transparent.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

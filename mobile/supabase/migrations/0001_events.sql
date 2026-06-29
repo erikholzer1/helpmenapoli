@@ -51,8 +51,7 @@ create index if not exists events_category_idx on public.events (category);
 
 -- Scraper upserts on (source, external_id); admin rows are exempt (external_id null).
 create unique index if not exists events_source_external_idx
-  on public.events (source, external_id)
-  where external_id is not null;
+  on public.events (source, external_id);
 
 -- Keep updated_at fresh on every write (drives the "Updated …" / 24h freshness UI).
 create or replace function public.set_updated_at()

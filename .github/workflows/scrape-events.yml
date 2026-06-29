@@ -39,6 +39,14 @@ jobs:
         # is what gets the stealth adapters past Akamai/Cloudflare.
         run: npx playwright install --with-deps chrome
 
+      - name: Debug secrets presence
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          echo "SUPABASE_URL set: $([[ -n "$SUPABASE_URL" ]] && echo YES || echo NO)"
+          echo "SERVICE_ROLE_KEY set: $([[ -n "$SUPABASE_SERVICE_ROLE_KEY" ]] && echo YES || echo NO)"
+
       - name: Scrape & upsert events
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

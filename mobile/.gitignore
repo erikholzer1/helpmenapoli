@@ -3,6 +3,7 @@ node_modules/
 dist/
 web-build/
 .env
+.DS_Store
 *.jks
 *.p8
 *.p12

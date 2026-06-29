@@ -49,7 +49,7 @@ jobs:
 
       - name: Scrape & upsert events
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL: https://mgpxptltgvpazhwgndqv.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           EVENTBRITE_TOKEN: ${{ secrets.EVENTBRITE_TOKEN }}
           EVENTBRITE_ORG_IDS: ${{ secrets.EVENTBRITE_ORG_IDS }}

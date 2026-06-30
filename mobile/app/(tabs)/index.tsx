@@ -87,7 +87,7 @@ export default function HomeScreen() {
           <NavCard
             title="Experiences"
             subtitle={"Private tours, cooking classes & handpicked day trips with Erik"}
-            iconName="compass"
+            iconName="sparkles"
             gradient={['#7B5EA7', '#3F2F60'] as const}
             onPress={() => router.push('/(tabs)/experiences')}
           />
@@ -105,9 +105,9 @@ export default function HomeScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.wideCard}
           >
-            <Ionicons name="map" size={120} color="rgba(255,255,255,0.10)" style={styles.wideCardWatermark} />
+            <Ionicons name="subway" size={120} color="rgba(255,255,255,0.10)" style={styles.wideCardWatermark} />
             <View style={styles.navCardIconWrap}>
-              <Ionicons name="map" size={26} color={Colors.white} />
+              <Ionicons name="subway" size={26} color={Colors.white} />
             </View>
             <Text style={styles.navCardTitle}>Getting Around</Text>
             <Text style={styles.navCardSub}>Metro, funiculars, trains, ferries & airport — hours, maps & tickets</Text>

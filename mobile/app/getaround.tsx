@@ -1,5 +1,6 @@
 import {
   View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
@@ -12,6 +13,7 @@ import {
   alerts, ferries, taxis, type TransitLine, type TransitSection,
 } from '@/constants/transit';
 import DriverSheet from '@/components/DriverSheet';
+import { useStrikes, sectorLabel, type Strike } from '@/hooks/useStrikes';
 
 function open(url: string) {
   Linking.openURL(url).catch(() => {});
@@ -82,9 +84,40 @@ function Section({ section }: { section: TransitSection }) {
   );
 }
 
+function formatStrikeDate(iso: string) {
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function StrikeCard({ strike }: { strike: Strike }) {
+  const dateStr = strike.end_date && strike.end_date !== strike.start_date
+    ? `${formatStrikeDate(strike.start_date)} – ${formatStrikeDate(strike.end_date)}`
+    : formatStrikeDate(strike.start_date);
+  const isNational = strike.relevance.toLowerCase().includes('nazio') || strike.relevance.toLowerCase().includes('interregion');
+
+  return (
+    <View style={styles.strikeCard}>
+      <View style={styles.strikeTop}>
+        <View style={styles.strikeSectorBadge}>
+          <Text style={styles.strikeSectorText}>{sectorLabel(strike.sector)}</Text>
+        </View>
+        {isNational && (
+          <View style={styles.strikeNationalBadge}>
+            <Text style={styles.strikeNationalText}>NATIONAL</Text>
+          </View>
+        )}
+      </View>
+      <Text style={styles.strikeDate}>{dateStr}</Text>
+      {strike.mode ? <Text style={styles.strikeMode}>{strike.mode}</Text> : null}
+      {strike.union_name ? <Text style={styles.strikeUnion}>{strike.union_name}</Text> : null}
+    </View>
+  );
+}
+
 export default function GetAroundScreen() {
   const router = useRouter();
   const [driverOpen, setDriverOpen] = useState(false);
+  const { strikes, loading: strikesLoading } = useStrikes();
   const FERRY = '#1C6E8C';
   const TAXI = '#C79A2E';
 
@@ -130,13 +163,27 @@ export default function GetAroundScreen() {
 
         <Text style={styles.intro}>{transitIntro}</Text>
 
-        {/* Service alerts & strikes */}
+        {/* Service alerts & strikes — live from MIT scioperi */}
         <View style={styles.alertCard}>
           <View style={styles.alertHead}>
             <Ionicons name="warning" size={17} color={Colors.red} />
-            <Text style={styles.alertTitle}>Service alerts & strikes</Text>
+            <Text style={styles.alertTitle}>Upcoming strikes</Text>
           </View>
-          <Text style={styles.alertText}>{alerts.intro}</Text>
+          {strikesLoading ? (
+            <ActivityIndicator size="small" color={Colors.red} style={{ marginVertical: 8 }} />
+          ) : strikes.length === 0 ? (
+            <Text style={styles.alertText}>No transport strikes announced for the coming days.</Text>
+          ) : (
+            <>
+              <Text style={styles.alertText}>
+                {strikes.length} upcoming strike{strikes.length !== 1 ? 's' : ''} affecting Naples-area transport — tap a line card below for live service status.
+              </Text>
+              {strikes.map((s) => <StrikeCard key={s.id} strike={s} />)}
+            </>
+          )}
+          <Text style={styles.alertNote}>
+            Italian strikes must give advance notice and keep guaranteed service windows (early morning & late afternoon). Always reconfirm on the day.
+          </Text>
           {alerts.links.map((l) => (
             <LinkRow key={l.url} label={l.label} url={l.url} color={Colors.red} />
           ))}
@@ -329,6 +376,28 @@ const styles = StyleSheet.create({
   alertHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   alertTitle: { fontFamily: 'DMSans-Medium', fontSize: 15, color: Colors.red },
   alertText: { fontFamily: 'DMSans-Regular', fontSize: 13, lineHeight: 19, color: Colors.warm, marginBottom: 6 },
+  alertNote: { fontFamily: 'DMSans-Regular', fontSize: 11.5, lineHeight: 16, color: Colors.faint, marginTop: 8, marginBottom: 4 },
+
+  strikeCard: {
+    backgroundColor: 'rgba(200,57,43,0.07)', borderRadius: Radius.md,
+    borderWidth: 1, borderColor: 'rgba(200,57,43,0.18)',
+    padding: 12, marginBottom: 8,
+  },
+  strikeTop: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6, flexWrap: 'wrap' },
+  strikeSectorBadge: {
+    backgroundColor: Colors.red, borderRadius: Radius.pill,
+    paddingHorizontal: 9, paddingVertical: 3,
+  },
+  strikeSectorText: { fontFamily: 'DMSans-Medium', fontSize: 11, color: Colors.white },
+  strikeNationalBadge: {
+    backgroundColor: 'rgba(200,57,43,0.15)', borderRadius: Radius.pill,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: 'rgba(200,57,43,0.3)',
+  },
+  strikeNationalText: { fontFamily: 'DMSans-Medium', fontSize: 10, color: Colors.red, letterSpacing: 0.5 },
+  strikeDate: { fontFamily: 'DMSans-Medium', fontSize: 14, color: Colors.dark, marginBottom: 3 },
+  strikeMode: { fontFamily: 'DMSans-Regular', fontSize: 12, color: Colors.warm, lineHeight: 16 },
+  strikeUnion: { fontFamily: 'DMSans-Regular', fontSize: 11, color: Colors.faint, marginTop: 2 },
 
   noticePill: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

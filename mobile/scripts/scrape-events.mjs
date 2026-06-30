@@ -33,6 +33,7 @@ import { scrapeBandsintown } from './scrapers/bandsintown.mjs';
 import { scrapeTicketone } from './scrapers/ticketone.mjs';
 import { scrapeDice } from './scrapers/dice.mjs';
 import { scrapeColdiretti } from './scrapers/coldiretti.mjs';
+import { scrapeStrikes } from './scrapers/strikes.mjs';
 
 const DRY_RUN = process.argv.includes('--dry');
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '')
@@ -113,6 +114,14 @@ async function main() {
   if (pruneErr) console.warn('Prune warning:', pruneErr.message);
 
   console.log(`\nDone. Upserted ${rows.length} events.`);
+
+  // Strikes — separate table, scraper handles its own upsert + cleanup.
+  console.log('\n── Strike calendar ──');
+  try {
+    await scrapeStrikes(supabase);
+  } catch (err) {
+    console.warn('· strikes crashed:', err.message);
+  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

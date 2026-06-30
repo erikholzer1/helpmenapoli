@@ -1,82 +1,59 @@
-// Napoli home game scraper — football-data.org v4 API
+// Napoli home game scraper — TheSportsDB (free, no API key required)
 // ============================================================================
-// Free API key at https://www.football-data.org/client/register
-// Add as GitHub Actions secret: FOOTBALL_DATA_API_KEY
+// Fetches SSC Napoli's next upcoming fixtures and filters for home games.
+// Upserts into the events table as category='sport'.
+// The app uses these for the What's On display and to schedule morning
+// traffic-warning notifications on game days.
 //
-// Fetches SSC Napoli's upcoming home fixtures and upserts them into the events
-// table as category='sport'. The app uses these for the What's On display and
-// to schedule morning traffic-warning notifications on game days.
+// API: https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id=133670
+// Returns next 5 scheduled events for the team (runs daily so coverage stays current).
 
-const NAPOLI_ID = 1759;            // SSC Napoli team ID on football-data.org
-const API_BASE  = 'https://api.football-data.org/v4';
-const VENUE     = 'Stadio Diego Armando Maradona, Fuorigrotta';
-
-async function fetchNapoliMatches(apiKey) {
-  // Fetch next 60 days of scheduled matches for Napoli
-  const from = new Date().toISOString().slice(0, 10);
-  const to   = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
-
-  const res = await fetch(
-    `${API_BASE}/teams/${NAPOLI_ID}/matches?status=SCHEDULED&dateFrom=${from}&dateTo=${to}`,
-    { headers: { 'X-Auth-Token': apiKey } }
-  );
-
-  if (res.status === 429) { console.log('· napoli-matches: rate limited, skipping'); return []; }
-  if (!res.ok) throw new Error(`football-data.org HTTP ${res.status}`);
-
-  const data = await res.json();
-  return (data.matches || []).filter((m) => m.homeTeam?.id === NAPOLI_ID);
-}
+const NAPOLI_ID  = '133670';
+const API_URL    = `https://www.thesportsdb.com/api/v1/json/3/eventsnext.php?id=${NAPOLI_ID}`;
+const VENUE      = 'Stadio Diego Armando Maradona, Fuorigrotta';
+const TICKET_URL = 'https://www.sscnapoli.it/biglietti';
 
 export async function scrapeNapoliMatches(supabase) {
-  const apiKey = process.env.FOOTBALL_DATA_API_KEY;
-  if (!apiKey) {
-    console.log('· napoli-matches: skipped (set FOOTBALL_DATA_API_KEY to enable)');
-    return;
-  }
-
-  let matches;
+  let events;
   try {
-    matches = await fetchNapoliMatches(apiKey);
+    const res = await fetch(API_URL, { headers: { 'User-Agent': 'HelpMeNapoli/1.0' } });
+    if (!res.ok) throw new Error(`TheSportsDB HTTP ${res.status}`);
+    const data = await res.json();
+    events = data.events || [];
   } catch (err) {
     console.error('· napoli-matches: fetch failed —', err.message);
     return;
   }
 
-  if (!matches.length) {
-    console.log('· napoli-matches: no upcoming home fixtures found');
+  // Keep only home games.
+  const homeGames = events.filter((e) => e.idHomeTeam === NAPOLI_ID);
+
+  if (!homeGames.length) {
+    console.log('· napoli-matches: no upcoming home fixtures in next 5 games');
     return;
   }
 
-  const rows = matches.map((m) => {
-    const kickoffUtc = m.utcDate; // "2026-08-24T18:00:00Z"
-    const date = kickoffUtc.slice(0, 10);
-
-    // Convert UTC kickoff to Naples local time (Europe/Rome, UTC+2 summer)
-    const localHour = new Date(kickoffUtc).toLocaleTimeString('it-IT', {
-      timeZone: 'Europe/Rome', hour: '2-digit', minute: '2-digit', hour12: false,
-    });
-
-    const opponent    = m.awayTeam?.name || 'TBD';
-    const competition = m.competition?.name || 'Serie A';
-    const matchday    = m.matchday ? ` — Matchday ${m.matchday}` : '';
+  const rows = homeGames.map((m) => {
+    const date      = m.dateEvent;                          // "YYYY-MM-DD"
+    const timeRaw   = (m.strTime || '').slice(0, 5);       // "HH:MM" (local Rome time)
+    const opponent  = m.strAwayTeam || 'TBD';
+    const league    = m.strLeague || 'Serie A';
+    const round     = m.intRound ? ` — Round ${m.intRound}` : '';
 
     return {
       source:      'napoli_home',
-      external_id: String(m.id),
+      external_id: String(m.idEvent),
       title:       `Napoli vs ${opponent}`,
-      description: `${competition}${matchday}. Kickoff ${localHour} at the Maradona. Expect heavy traffic around Fuorigrotta and the Tangenziale up to 4 hours before and after the match.`,
+      description: `${league}${round}. Kickoff ${timeRaw || 'TBC'} at the Maradona. Expect heavy traffic around Fuorigrotta and the Tangenziale up to 4 hours before and after the match.`,
       category:    'sport',
       venue:       VENUE,
       area:        'Fuorigrotta',
       date,
-      time:        localHour,
+      time:        timeRaw || null,
       free:        false,
-      ticket_url:  'https://www.sscnapoli.it/biglietti',
+      image_url:   m.strThumb || m.strPoster || null,
+      ticket_url:  TICKET_URL,
       updated_at:  new Date().toISOString(),
-      // Store kickoff UTC so the app can schedule notifications precisely
-      // (stored in image_url slot — we repurpose it; no image for these rows)
-      image_url:   null,
     };
   });
 

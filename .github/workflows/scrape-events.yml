@@ -47,5 +47,4 @@ jobs:
           EVENTBRITE_ORG_IDS: ${{ secrets.EVENTBRITE_ORG_IDS }}
           BANDSINTOWN_APP_ID: ${{ secrets.BANDSINTOWN_APP_ID }}
           BANDSINTOWN_ARTISTS: ${{ secrets.BANDSINTOWN_ARTISTS }}
-          FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
         run: node scripts/scrape-events.mjs

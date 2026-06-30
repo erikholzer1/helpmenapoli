@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Linking, Modal } from 'react-
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Radius } from '@/constants/Colors';
 
-const WHATSAPP = '393331489859';
+const WHATSAPP = '393331489589';
 const EMAIL = 'help.me.napoli@gmail.com';
 
 export function openWhatsApp(subject: string) {

@@ -9,7 +9,7 @@ import { openWhatsApp, openEmail } from './ContactSheet';
 
 type Answers = Record<string, string>;
 
-const ERIK_PHONE = '393278675563'; // Italian format, no +
+const ERIK_PHONE = '393331489589'; // Italian format, no +
 
 function buildDriverMessage(a: Answers): string {
   const lines = [

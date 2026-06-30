@@ -183,7 +183,7 @@ export default function BookScreen() {
           </View>
           <TouchableOpacity
             style={styles.whatsappBtn}
-            onPress={() => Linking.openURL('https://wa.me/message/helpmenapoli')}
+            onPress={() => Linking.openURL('https://wa.me/393331489589')}
           >
             <Text style={styles.whatsappBtnText}>Chat</Text>
           </TouchableOpacity>

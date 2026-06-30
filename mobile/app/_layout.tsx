@@ -3,10 +3,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { useGameDayNotifications } from '@/hooks/useGameDayNotifications';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  useGameDayNotifications();
+
   const [loaded] = useFonts({
     'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
     'PlayfairDisplay-Italic': require('../assets/fonts/PlayfairDisplay-Italic.ttf'),

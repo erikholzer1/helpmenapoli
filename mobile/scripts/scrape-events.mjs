@@ -34,6 +34,7 @@ import { scrapeTicketone } from './scrapers/ticketone.mjs';
 import { scrapeDice } from './scrapers/dice.mjs';
 import { scrapeColdiretti } from './scrapers/coldiretti.mjs';
 import { scrapeStrikes } from './scrapers/strikes.mjs';
+import { scrapeNapoliMatches } from './scrapers/napoli-matches.mjs';
 
 const DRY_RUN = process.argv.includes('--dry');
 const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '')
@@ -121,6 +122,14 @@ async function main() {
     await scrapeStrikes(supabase);
   } catch (err) {
     console.warn('· strikes crashed:', err.message);
+  }
+
+  // Napoli home fixtures — upserts directly into events table.
+  console.log('\n── Napoli home fixtures ──');
+  try {
+    await scrapeNapoliMatches(supabase);
+  } catch (err) {
+    console.warn('· napoli-matches crashed:', err.message);
   }
 }
 

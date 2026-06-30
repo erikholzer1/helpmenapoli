@@ -16,7 +16,8 @@ export type EventCategory =
   | 'food'
   | 'culture'
   | 'wellness'
-  | 'business';
+  | 'business'
+  | 'sport';
 
 export type NaplesEvent = {
   id: string;
@@ -47,10 +48,11 @@ export const CATEGORY_META: Record<
   culture:  { label: 'Culture',           icon: 'color-palette-outline', color: '#D4A843' },
   wellness: { label: 'Wellness',          icon: 'leaf-outline',          color: '#3E8E6B' },
   business: { label: 'Business & Networking', icon: 'briefcase-outline',  color: '#1C7C9C' },
+  sport:    { label: 'Napoli',            icon: 'football-outline',      color: '#0B57A4' },
 };
 
 export const CATEGORY_ORDER: EventCategory[] = [
-  'music', 'theater', 'food', 'culture', 'wellness', 'business',
+  'sport', 'music', 'theater', 'food', 'culture', 'wellness', 'business',
 ];
 
 // Maps a raw Supabase row (snake_case) to our camelCase NaplesEvent.

@@ -83,7 +83,7 @@ export function todayISO() {
 // Builds a normalized DB row from source-agnostic fields, or null if the event
 // is unusable (no title/date), in the past, or doesn't fit one of the 6
 // categories. This is the single chokepoint every adapter funnels through.
-const VALID_CATEGORIES = new Set(['music', 'theater', 'food', 'culture', 'wellness', 'business']);
+const VALID_CATEGORIES = new Set(['music', 'theater', 'food', 'culture', 'wellness', 'business', 'sport']);
 
 export function makeRow({
   source,

@@ -39,7 +39,7 @@ function LineCard({ line, color }: { line: TransitLine; color: string }) {
         <View style={[styles.lineDot, { backgroundColor: color }]} />
         <Text style={styles.lineName}>{line.name}</Text>
         {line.tag ? (
-          <View style={[styles.lineTag, { backgroundColor: color }]}>
+          <View style={[styles.lineTag, { backgroundColor: line.tag === 'CLOSED' ? Colors.red : color }]}>
             <Text style={styles.lineTagText}>{line.tag}</Text>
           </View>
         ) : null}

@@ -42,29 +42,18 @@ async function scheduleGameDayNotifications() {
     .map((n) => n.identifier);
   await Promise.all(gameNotifIds.map((id) => Notifications.cancelScheduledNotificationAsync(id)));
 
-  // Schedule a notification at 08:00 on each game day.
+  // Schedule a notification at 09:00 on each game day.
   for (const game of games) {
     const [year, month, day] = game.date.split('-').map(Number);
-    const trigger = new Date(year, month - 1, day, 8, 0, 0);
+    const trigger = new Date(year, month - 1, day, 9, 0, 0);
     if (trigger <= new Date()) continue; // already past
 
-    // Work out kickoff hour for the "from X:XX" text.
-    const kickoffText = game.time
-      ? `Kickoff at ${game.time}.`
-      : 'Check kickoff time.';
-
-    // Estimate 4h before kickoff for traffic warning.
-    let trafficFromText = '';
-    if (game.time) {
-      const [h, m] = game.time.split(':').map(Number);
-      const warningHour = h - 4;
-      if (warningHour >= 0) trafficFromText = ` Heavy traffic around Fuorigrotta & the Tangenziale from ${warningHour}:${m.toString().padStart(2, '0')}.`;
-    }
+    const kickoffText = game.time ? ` Kickoff ${game.time}.` : '';
 
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: `🔵 ${game.title} — today at Maradona`,
-        body: `${kickoffText}${trafficFromText} Plan your route.`,
+        title: `🔵 Napoli home game today — plan your route`,
+        body: `Heavy traffic expected around Fuorigrotta and on the Tangenziale (Centro exit).${kickoffText} Allow extra time if travelling near the Maradona.`,
         data: { type: 'gameday', date: game.date },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: trigger },

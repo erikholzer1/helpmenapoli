@@ -44,7 +44,7 @@ export const experiences: Experience[] = [
     id: 'boat',
     title: 'Boat Day — Capri & Beyond',
     tagline: 'A day on the bay, the coast at your pace.',
-    image: require('@/assets/images/experiences/boat.jpeg'), // replace file with the new aerial photo and rename to boat-capri.jpeg, then update this line
+    image: require('@/assets/images/experiences/boat-capri.png'),
     booking: {
       type: 'hybrid',
       fixedDates: [

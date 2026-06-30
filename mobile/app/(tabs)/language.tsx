@@ -9,6 +9,10 @@ import { phraseCategories, type Category, type Phrase, type VocabItem } from '@/
 import GrammarView from '@/components/GrammarView';
 import { speak } from '@/lib/speech';
 import { lookupDictionary } from '@/lib/dictionary';
+import { usePremium } from '@/hooks/usePremium';
+import PaywallSheet from '@/components/PaywallSheet';
+
+const FREE_LANGUAGE_IDS = new Set(['basics', 'pronunciation']);
 
 type Tab = 'phrases' | 'vocab';
 
@@ -72,6 +76,8 @@ function VocabCard({ item, catLabel, dialect }: { item: VocabItem; catLabel?: st
 }
 
 export default function LanguageScreen() {
+  const { isPremium } = usePremium();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('basics');
   const [tab, setTab] = useState<Tab>('phrases');
   const [query, setQuery] = useState('');
@@ -124,6 +130,7 @@ export default function LanguageScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <PaywallSheet visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerEyebrow}>SPEAK LIKE A LOCAL</Text>
@@ -142,7 +149,7 @@ export default function LanguageScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.modeBtn, mode === 'grammar' && styles.modeBtnActive]}
-          onPress={() => setMode('grammar')}
+          onPress={() => { if (!isPremium) { setPaywallOpen(true); return; } setMode('grammar'); }}
         >
           <Ionicons name="school-outline" size={15} color={mode === 'grammar' ? Colors.white : Colors.mid} />
           <Text style={[styles.modeText, mode === 'grammar' && styles.modeTextActive]}>Grammar</Text>
@@ -154,22 +161,30 @@ export default function LanguageScreen() {
       ) : (
       <>
       {/* Search */}
-      <View style={styles.searchWrap}>
+      <TouchableOpacity
+        activeOpacity={isPremium ? 1 : 0.85}
+        onPress={!isPremium ? () => setPaywallOpen(true) : undefined}
+        style={styles.searchWrap}
+      >
         <Ionicons name="search" size={16} color={Colors.mid} />
         <TextInput
           style={styles.searchInput}
           value={query}
-          onChangeText={setQuery}
-          placeholder="Search words & phrases..."
+          onChangeText={isPremium ? setQuery : undefined}
+          placeholder={isPremium ? 'Search words & phrases...' : 'Search — unlock to use'}
           placeholderTextColor={Colors.mid}
           autoCorrect={false}
+          editable={isPremium}
+          pointerEvents={isPremium ? 'auto' : 'none'}
         />
-        {searching ? (
+        {isPremium && searching ? (
           <TouchableOpacity onPress={() => setQuery('')}>
             <Ionicons name="close-circle" size={16} color={Colors.mid} />
           </TouchableOpacity>
+        ) : !isPremium ? (
+          <Ionicons name="lock-closed" size={14} color={Colors.mid} />
         ) : null}
-      </View>
+      </TouchableOpacity>
 
       {/* Category chips — hidden while searching (search spans all sections) */}
       {!searching ? (
@@ -182,12 +197,14 @@ export default function LanguageScreen() {
           {phraseCategories.map((cat: Category) => {
             const active = activeCategory === cat.id;
             const isNap = cat.id === 'neapolitan';
+            const locked = !isPremium && !FREE_LANGUAGE_IDS.has(cat.id);
             return (
               <TouchableOpacity
                 key={cat.id}
                 style={[styles.chip, active && styles.chipActive, isNap && active && styles.chipNapActive]}
-                onPress={() => setActiveCategory(cat.id)}
+                onPress={() => { if (locked) { setPaywallOpen(true); return; } setActiveCategory(cat.id); }}
               >
+                {locked && <Ionicons name="lock-closed" size={10} color={active ? Colors.white : Colors.mid} style={{ marginRight: 2 }} />}
                 <Text style={[styles.chipText, active && styles.chipTextActive]}>
                   {cat.label}
                 </Text>

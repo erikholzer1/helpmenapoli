@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bread Class Week — Master Plan | May 10–16, 2026</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Inter:wght@300;400;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1A2744;
+      --gold: #c9a84c;
+      --green: #2D6A4F;
+      --red: #8B1A1A;
+      --light-green: #e8f4ee;
+      --light-gold: #fdf6e3;
+      --light-red: #fdf0f0;
+      --light-navy: #eef1f7;
+      --dark: #1a1a1a;
+      --mid: #6b7280;
+      --light: #f8f7f4;
+      --border: #e0ddd6;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* COVER */
+    .cover {
+      background: var(--navy);
+      color: white;
+      padding: 3rem 4rem;
+      border-bottom: 4px solid var(--gold);
+    }
+    .cover-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.75rem;
+    }
+    .cover h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    .cover h1 em { color: var(--gold); font-style: italic; }
+    .cover-sub {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+    }
+    .cover-meta {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .cover-meta span {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+    }
+    .cover-meta span strong { color: var(--gold); }
+
+    /* LAYOUT */
+    .content { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+    /* SECTIONS */
+    .section { margin-bottom: 3rem; }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--navy);
+      border-bottom: 2px solid var(--gold);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-title span {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      vertical-align: middle;
+      margin-left: 0.75rem;
+    }
+
+    /* SHOPPING GRID */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .shop-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+    }
+    .shop-card.full { grid-column: 1 / -1; }
+    .shop-card h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+    }
+    .shop-item:last-child { border-bottom: none; }
+    .shop-item .item-name { font-weight: 400; color: var(--dark); }
+    .shop-item .item-qty {
+      font-weight: 700;
+      color: var(--navy);
+      white-space: nowrap;
+      font-size: 0.85rem;
+    }
+    .shop-item .item-note {
+      font-size: 0.75rem;
+      color: var(--mid);
+      font-weight: 300;
+      display: block;
+    }
+
+    /* FORMULA BOX */
+    .formula-box {
+      background: var(--light-navy);
+      border-left: 4px solid var(--navy);
+      border-radius: 0 4px 4px 0;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .formula-box h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--navy);
+      margin-bottom: 0.75rem;
+    }
+    .formula-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .formula-item { text-align: center; }
+    .formula-item .amt {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--navy);
+      display: block;
+    }
+    .formula-item .lbl {
+      font-size: 0.72rem;
+      color: var(--mid);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* SCHEDULE */
+    .day-block {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .day-header.sunday { background: var(--light-navy); }
+    .day-header.monday { background: var(--light-gold); }
+    .day-header.tuesday { background: var(--light-green); }
+    .day-header.wednesday { background: var(--light-gold); }
+    .day-header.thursday { background: var(--light-green); }
+    .day-header.friday { background: var(--light-navy); }
+    .day-header.saturday { background: var(--navy); }
+    .day-header.saturday .day-name,
+    .day-header.saturday .day-date { color: white; }
+    .day-header.saturday .day-badge { background: var(--gold); color: var(--navy); }
+    .day-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--navy);
+    }
+    .day-date {
+      font-size: 0.78rem;
+      color: var(--mid);
+    }
+    .day-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: var(--navy);
+      color: white;
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+    }
+    .day-body { padding: 0.75rem 1.25rem; }
+
+    .event-row {
+      display: flex;
+      gap: 1rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      align-items: flex-start;
+    }
+    .event-row:last-child { border-bottom: none; }
+    .event-time {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--mid);
+      min-width: 80px;
+      padding-top: 0.1rem;
+    }
+    .event-content { flex: 1; }
+    .event-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .event-title.bread { color: var(--green); }
+    .event-title.starter { color: var(--gold); }
+    .event-title.pasta { color: var(--red); }
+    .event-title.blocked { color: var(--mid); }
+    .event-title.class { color: var(--navy); font-weight: 700; }
+    .event-note {
+      font-size: 0.78rem;
+      color: var(--mid);
+      font-weight: 300;
+      margin-top: 0.1rem;
+    }
+    .event-icon { font-size: 1rem; flex-shrink: 0; padding-top: 0.05rem; }
+
+    /* STARTER BUILD TABLE */
+    .starter-table { width: 100%; border-collapse: collapse; background: white; }
+    .starter-table th {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--navy);
+      padding: 0.6rem 1rem;
+      background: var(--light-navy);
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+    .starter-table td {
+      padding: 0.55rem 1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .starter-table tr:last-child td { border-bottom: none; }
+    .starter-table tr:nth-child(even) td { background: rgba(0,0,0,0.015); }
+    .tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border-radius: 2px;
+    }
+    .tag.green { background: var(--light-green); color: var(--green); }
+    .tag.gold { background: var(--light-gold); color: #7a6010; }
+    .tag.navy { background: var(--light-navy); color: var(--navy); }
+    .tag.red { background: var(--light-red); color: var(--red); }
+
+    /* PASTA RECIPE */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    .recipe-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem;
+    }
+    .recipe-card h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.75rem;
+    }
+    .recipe-step {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.35rem 0;
+      font-size: 0.85rem;
+    }
+    .recipe-step .step-num {
+      font-weight: 700;
+      color: var(--red);
+      min-width: 18px;
+    }
+
+    /* EQUIPMENT */
+    .equip-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.5rem 1rem;
+    }
+    .equip-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      padding: 0.3rem 0;
+    }
+    .equip-check {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* WINE SNACK */
+    .wine-snack-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    /* NOTE BOX */
+    .note-box {
+      background: var(--light-gold);
+      border-left: 4px solid var(--gold);
+      border-radius: 0 4px 4px 0;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.82rem;
+      color: #5a4a10;
+      margin-top: 0.75rem;
+    }
+    .note-box strong { font-weight: 700; }
+
+    @media print {
+      body { font-size: 11px; background: white; }
+      .cover { padding: 1.5rem 2rem; }
+      .content { padding: 1.5rem 1rem; }
+      .section { margin-bottom: 2rem; page-break-inside: avoid; }
+      .day-block { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cover">
+    <p class="cover-eyebrow">Erik's Bread Week</p>
+    <h1>🍞 Sourdough Class — <em>Master Plan</em></h1>
+    <p class="cover-sub">4 practice bakes · starter builds · gnocchi alla sorrentina · wine & snacks</p>
+    <div class="cover-meta">
+      <span><strong>Class Date:</strong> Saturday, May 16 at 3:30pm</span>
+      <span><strong>Guests:</strong> 8 people</span>
+      <span><strong>Loaves:</strong> 9 total (4 practice + class day)</span>
+      <span><strong>Pasta:</strong> Gnocchi alla Sorrentina (made Friday)</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- BREAD FORMULA -->
+    <div class="section">
+      <h2 class="section-title">Loaf Formula <span>Per loaf · ~900g baked</span></h2>
+      <div class="formula-box">
+        <h4>Per Loaf — 75% Hydration</h4>
+        <div class="formula-row">
+          <div class="formula-item">
+            <span class="amt">500g</span>
+            <span class="lbl">Manitoba Flour</span>
+          </div>
+          <div class="formula-item">
+            <span class="amt">375g</span>
+            <span class="lbl">Water (room temp)</span>
+          </div>
+          <div class="formula-item">
+            <span class="amt">50g</span>
+            <span class="lbl">Active Starter</span>
+          </div>
+          <div class="formula-item">
+            <span class="amt">15g</span>
+            <span class="lbl">Fine Sea Salt</span>
+          </div>
+        </div>
+      </div>
+      <div class="note-box">
+        <strong>Note:</strong> Autolyse flour + water 30 min first. Then add starter, mix well. Add salt dissolved in a splash of water last. Bulk ferment 4–6 hrs at room temp with stretch &amp; folds every 30 min × 4–5 rounds.
+      </div>
+    </div>
+
+    <!-- SHOPPING LIST -->
+    <div class="section">
+      <h2 class="section-title">Shopping List <span>Everything you need</span></h2>
+      <div class="shop-grid">
+
+        <!-- BREAD -->
+        <div class="shop-card">
+          <h3>🌾 Bread Ingredients</h3>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Manitoba Flour</span>
+              <span class="item-note">4 practice loaves + 9 class loaves</span>
+            </div>
+            <span class="item-qty">7 kg</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Semolina Flour</span>
+              <span class="item-note">For oiling proofing containers</span>
+            </div>
+            <span class="item-qty">500g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Fine Sea Salt</span>
+              <span class="item-note">15g per loaf × 13 loaves</span>
+            </div>
+            <span class="item-qty">250g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Olive Oil</span>
+              <span class="item-note">Thin coat inside containers before semolina</span>
+            </div>
+            <span class="item-qty">1 bottle</span>
+          </div>
+        </div>
+
+        <!-- PASTA -->
+        <div class="shop-card">
+          <h3>🍝 Pasta — Gnocchi alla Sorrentina (Fri, serves 9–10)</h3>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Gnocchi di patate</span>
+              <span class="item-note">Store-bought is fine, saves time</span>
+            </div>
+            <span class="item-qty">2 kg</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Passata di pomodoro</span>
+              <span class="item-note">San Marzano if possible</span>
+            </div>
+            <span class="item-qty">1.2 kg</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Fior di latte mozzarella</span>
+              <span class="item-note">Torn, not sliced</span>
+            </div>
+            <span class="item-qty">600g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Parmigiano Reggiano</span>
+              <span class="item-note">Grated for top layer</span>
+            </div>
+            <span class="item-qty">150g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Fresh basil</span>
+            </div>
+            <span class="item-qty">2 bunches</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Garlic</span>
+            </div>
+            <span class="item-qty">1 head</span>
+          </div>
+        </div>
+
+        <!-- WINE -->
+        <div class="shop-card">
+          <h3>🍾 Wine</h3>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Prosecco DOC</span>
+              <span class="item-note">For aperitivo — open first</span>
+            </div>
+            <span class="item-qty">2 bottles</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">White Wine</span>
+              <span class="item-note">Falanghina, Greco di Tufo, or Fiano</span>
+            </div>
+            <span class="item-qty">2 bottles</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Red Wine</span>
+              <span class="item-note">Aglianico or Montepulciano</span>
+            </div>
+            <span class="item-qty">2 bottles</span>
+          </div>
+        </div>
+
+        <!-- SNACKS -->
+        <div class="shop-card">
+          <h3>🫒 Snacks (for stretch & fold breaks)</h3>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Taralli (Neapolitan)</span>
+            </div>
+            <span class="item-qty">2 bags</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Olives (mixed)</span>
+            </div>
+            <span class="item-qty">500g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Mixed nuts</span>
+            </div>
+            <span class="item-qty">300g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Patatine / chips</span>
+            </div>
+            <span class="item-qty">2 bags</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Mortadella or salame</span>
+              <span class="item-note">Pre-sliced, easy to serve</span>
+            </div>
+            <span class="item-qty">200g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Provola or scamorza</span>
+              <span class="item-note">Cut into cubes</span>
+            </div>
+            <span class="item-qty">200g</span>
+          </div>
+          <div class="shop-item">
+            <div>
+              <span class="item-name">Bruschettine / crackers</span>
+            </div>
+            <span class="item-qty">2 packs</span>
+          </div>
+        </div>
+
+        <!-- EQUIPMENT -->
+        <div class="shop-card full">
+          <h3>🧰 Equipment Checklist</h3>
+          <div class="equip-grid">
+            <div class="equip-item"><div class="equip-check"></div> 9 plastic tupperware containers (proofing)</div>
+            <div class="equip-item"><div class="equip-check"></div> Digital kitchen scale</div>
+            <div class="equip-item"><div class="equip-check"></div> 9+ large mixing bowls</div>
+            <div class="equip-item"><div class="equip-check"></div> Bench scraper</div>
+            <div class="equip-item"><div class="equip-check"></div> Dutch oven / cast iron (practice bakes)</div>
+            <div class="equip-item"><div class="equip-check"></div> Bread lame or sharp knife (scoring)</div>
+            <div class="equip-item"><div class="equip-check"></div> Parchment paper</div>
+            <div class="equip-item"><div class="equip-check"></div> Oven thermometer</div>
+            <div class="equip-item"><div class="equip-check"></div> Large baking dish (gnocchi pasta)</div>
+            <div class="equip-item"><div class="equip-check"></div> Cooling rack</div>
+            <div class="equip-item"><div class="equip-check"></div> 9 ziplock bags or labels (guests take flour home)</div>
+            <div class="equip-item"><div class="equip-check"></div> Wine glasses (9+)</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- STARTER BUILD -->
+    <div class="section">
+      <h2 class="section-title">Starter Build Schedule <span>Building toward 450g for class</span></h2>
+      <div class="note-box" style="margin-bottom:1rem;">
+        <strong>Goal:</strong> Have 450g+ of active, peaked starter ready Saturday morning for 9 × 50g class portions. Feed for each bake takes 50g from daily builds. The mother jar stays intact throughout.
+      </div>
+      <table class="starter-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Action</th>
+            <th>Formula</th>
+            <th>Use</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Sun night</strong> (tonight)</td>
+            <td>Feed starter</td>
+            <td>20g mother + 100g Manitoba + 80g water → 200g</td>
+            <td>Peaked by Mon 6–8am → 50g for Bake 1</td>
+          </tr>
+          <tr>
+            <td><strong>Mon night</strong></td>
+            <td>Feed &amp; rebuild</td>
+            <td>30g starter + 100g Manitoba + 100g water → 230g</td>
+            <td>Peaked by Tue morning → 50g for Bake 2</td>
+          </tr>
+          <tr>
+            <td><strong>Tue night</strong></td>
+            <td>Feed &amp; rebuild</td>
+            <td>30g starter + 120g Manitoba + 120g water → 270g</td>
+            <td>Peaked by Wed morning → 50g for Bake 3</td>
+          </tr>
+          <tr>
+            <td><strong>Wed night</strong></td>
+            <td>Build up — bigger</td>
+            <td>50g starter + 150g Manitoba + 150g water → 350g</td>
+            <td>Peaked by Thu morning → 50g for Bake 4</td>
+          </tr>
+          <tr>
+            <td><strong>Thu night</strong> ⭐</td>
+            <td>Big build for class</td>
+            <td>50g starter + 225g Manitoba + 225g water → 500g</td>
+            <td>Peaked by Fri morning → 50g for Bake 4 mix (if needed), rest saves forward</td>
+          </tr>
+          <tr>
+            <td><strong>Fri 2–3pm</strong> ⭐⭐</td>
+            <td>Final class build</td>
+            <td>50g peaked starter + 200g Manitoba + 200g water → 450g</td>
+            <td>Peaks Sat 6–8am — <strong>this is your class starter</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Sat morning</strong></td>
+            <td>Float test &amp; check</td>
+            <td>Drop a small amount in water — it should float</td>
+            <td>450g+ ready for 9 loaves × 50g each</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- WEEK SCHEDULE -->
+    <div class="section">
+      <h2 class="section-title">Week Schedule <span>May 10–16</span></h2>
+
+      <!-- SUNDAY -->
+      <div class="day-block">
+        <div class="day-header sunday">
+          <div>
+            <div class="day-name">Sunday, May 10</div>
+            <div class="day-date">Tonight — prep &amp; starter</div>
+          </div>
+          <span class="day-badge">Tonight</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">6:00 pm</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">Feed Starter</div>
+              <div class="event-note">20g mother + 100g Manitoba + 80g water. Leave at room temp, peaks in ~8–10 hrs.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">Evening</span>
+            <span class="event-icon">🛒</span>
+            <div class="event-content">
+              <div class="event-title">Review shopping list</div>
+              <div class="event-note">Check what you have, plan grocery run for Monday or Tuesday.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONDAY -->
+      <div class="day-block">
+        <div class="day-header monday">
+          <div>
+            <div class="day-name">Monday, May 11</div>
+            <div class="day-date">Bake 1 Mix Day — busy evening</div>
+          </div>
+          <span class="day-badge">Bake 1 Mix</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">8:00 am</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Mix Bake 1 Dough</div>
+              <div class="event-note">Autolyse: 500g Manitoba + 375g water, rest 30 min. Add 50g peaked starter + 10g salt. Begin bulk ferment.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">8:30–10:30 am</span>
+            <span class="event-icon">🙌</span>
+            <div class="event-content">
+              <div class="event-title bread">Stretch &amp; Folds × 4</div>
+              <div class="event-note">Every 30 min. Wet hands, grab side of dough, stretch up and fold over. Rotate bowl, repeat × 4 per set.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">11:00 am</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Federica Lazza (somatic session)</div>
+              <div class="event-note">Dough rests during this time. Fine.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">12:30 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Check bulk — pre-shape</div>
+              <div class="event-note">Dough should be ~50–75% risen, domed, bubbly edges. Turn onto counter, pre-shape into ball, bench rest 20 min.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">1:00 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Final shape → fridge</div>
+              <div class="event-note">Shape, place in semolina-oiled tupperware seam-up, cover. Into fridge for cold retard overnight.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">3:30–6:00 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Christian Brayan</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">7:30 pm</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">Feed Starter (Bake 2 build)</div>
+              <div class="event-note">30g starter + 100g Manitoba + 100g water → 230g. Peaks Tue morning.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">8:00–11:00 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Integration MEEEEEEEEN</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TUESDAY -->
+      <div class="day-block">
+        <div class="day-header tuesday">
+          <div>
+            <div class="day-name">Tuesday, May 12</div>
+            <div class="day-date">Bake 1 🔥 · Bake 2 Mix</div>
+          </div>
+          <span class="day-badge" style="background:var(--green);">Bake 1 🔥</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">7:00 am</span>
+            <span class="event-icon">🔥</span>
+            <div class="event-content">
+              <div class="event-title bread">Preheat oven — Bake 1</div>
+              <div class="event-note">250°C (max) with Dutch oven inside. Preheat 45 min minimum.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">7:45 am</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Score &amp; bake Bake 1</div>
+              <div class="event-note">Turn loaf onto parchment, score with lame. Into hot dutch oven, covered 20 min → uncovered 20–25 min until deep golden. Cool 1 hr on rack.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">11:00 am</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Michela video</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">5:30–7:30 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Sergio e Lorenzo</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">7:45 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Mix Bake 2 Dough</div>
+              <div class="event-note">Same formula. 50g of peaked starter from morning feed. Stretch &amp; folds 8–10pm. Bulk overnight at room temp.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">Before bed</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">Feed Starter (Bake 3 build)</div>
+              <div class="event-note">30g + 120g Manitoba + 120g water → 270g. Peaks Wed morning.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEDNESDAY -->
+      <div class="day-block">
+        <div class="day-header wednesday">
+          <div>
+            <div class="day-name">Wednesday, May 13</div>
+            <div class="day-date">Bake 2 🔥 · Bake 3 Mix</div>
+          </div>
+          <span class="day-badge" style="background:var(--green);">Bake 2 🔥</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">7:00 am</span>
+            <span class="event-icon">✅</span>
+            <div class="event-content">
+              <div class="event-title bread">Check bulk Bake 2 — shape → fridge</div>
+              <div class="event-note">Bubbly, risen, domed? Shape, into oiled tupperware, fridge. Let it cold retard 2–3 hrs.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">9:00 am</span>
+            <span class="event-icon">🔥</span>
+            <div class="event-content">
+              <div class="event-title bread">Preheat &amp; bake Bake 2</div>
+              <div class="event-note">45 min preheat, score, bake covered 20 min + uncovered 20–25 min. Done by 11am. Cool on rack.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">11:00 am</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Claudio lesson</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">2:30 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Sabrina (Gianluca e Christina)</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">3:45–6:00 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Christian Brayan</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">6:15 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Mix Bake 3 Dough</div>
+              <div class="event-note">Same formula. Stretch &amp; folds 6:30–8:30pm. Bulk overnight.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">Before bed</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">Feed Starter — bigger build</div>
+              <div class="event-note">50g + 150g Manitoba + 150g water → 350g. Peaks Thu morning.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- THURSDAY -->
+      <div class="day-block">
+        <div class="day-header thursday">
+          <div>
+            <div class="day-name">Thursday, May 14</div>
+            <div class="day-date">Bake 3 🔥 · Bake 4 Mix · Big Starter Build</div>
+          </div>
+          <span class="day-badge" style="background:var(--green);">Bake 3 🔥</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">7:00 am</span>
+            <span class="event-icon">✅</span>
+            <div class="event-content">
+              <div class="event-title bread">Shape Bake 3 → fridge</div>
+              <div class="event-note">Cold retard 2–3 hrs while preheating.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">9:30 am</span>
+            <span class="event-icon">🔥</span>
+            <div class="event-content">
+              <div class="event-title bread">Preheat &amp; bake Bake 3</div>
+              <div class="event-note">45 min preheat, score, bake. Done by 11:30am. Cool on rack.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">11:30 am</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Michela video</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">3:45–6:00 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Christian Brayan</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">6:15 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title bread">Mix Bake 4 Dough</div>
+              <div class="event-note">Last practice loaf. Stretch &amp; folds 6:30–8:30pm. Overnight bulk.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">8:30 pm</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">⭐ BIG STARTER BUILD (for class)</div>
+              <div class="event-note">50g starter + 225g Manitoba + 225g water → 500g. Peaks Fri morning 6–8am.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FRIDAY -->
+      <div class="day-block">
+        <div class="day-header friday">
+          <div>
+            <div class="day-name">Friday, May 15</div>
+            <div class="day-date">Bake 4 🔥 · Final Starter Build · Gnocchi alla Sorrentina</div>
+          </div>
+          <span class="day-badge">Pasta Night</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">7:30 am</span>
+            <span class="event-icon">✅</span>
+            <div class="event-content">
+              <div class="event-title bread">Shape Bake 4 → fridge</div>
+              <div class="event-note">Cold retard while you run errands or rest. Bake mid-morning or early afternoon.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">10:00 am</span>
+            <span class="event-icon">🔥</span>
+            <div class="event-content">
+              <div class="event-title bread">Preheat &amp; bake Bake 4</div>
+              <div class="event-note">45 min preheat, score, bake. Last practice loaf — take notes on crumb, crust, flavor.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">2:00 pm</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">⭐⭐ FINAL CLASS STARTER BUILD</div>
+              <div class="event-note">50g peaked starter + 200g Manitoba + 200g water → 450g. Peaks Sat 6–8am. This is your class starter.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">3:00–4:00 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Nathan lesson</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">4:00–6:15 pm</span>
+            <span class="event-icon">🗓</span>
+            <div class="event-content">
+              <div class="event-title blocked">Christian Brayan</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">6:30 pm</span>
+            <span class="event-icon">🍝</span>
+            <div class="event-content">
+              <div class="event-title pasta">Make Gnocchi alla Sorrentina</div>
+              <div class="event-note">~1.5 hours. Make sauce, par-cook gnocchi, layer in baking dish, refrigerate overnight. Bake Saturday before guests arrive.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SATURDAY -->
+      <div class="day-block">
+        <div class="day-header saturday">
+          <div>
+            <div class="day-name">Saturday, May 16 — Class Day 🎉</div>
+            <div class="day-date">9 loaves · 8 guests · Prosecco at the door</div>
+          </div>
+          <span class="day-badge">Bread Class</span>
+        </div>
+        <div class="day-body">
+          <div class="event-row">
+            <span class="event-time">8:00 am</span>
+            <span class="event-icon">🌿</span>
+            <div class="event-content">
+              <div class="event-title starter">Float test — starter check</div>
+              <div class="event-note">Drop a small spoonful in water. Floats = ready. Doesn't float = wait 30 min, try again.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">9:00 am</span>
+            <span class="event-icon">🍝</span>
+            <div class="event-content">
+              <div class="event-title pasta">Gnocchi al forno in oven</div>
+              <div class="event-note">180°C covered with foil, 35–40 min. Rest. Reheat briefly before serving if needed.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">10:00 am</span>
+            <span class="event-icon">🧰</span>
+            <div class="event-content">
+              <div class="event-title class">Set up stations</div>
+              <div class="event-note">Oil 9 tupperware with thin olive oil + semolina coat. Pre-measure 9 × 500g flour bags. Pre-measure 9 × 10g salt packets. Lay out bowls, scrapers, scales.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">2:00 pm</span>
+            <span class="event-icon">🍾</span>
+            <div class="event-content">
+              <div class="event-title class">Chill prosecco &amp; whites</div>
+              <div class="event-note">Make sure snacks are out on boards. Open a prosecco for yourself — you earned it.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">3:30 pm</span>
+            <span class="event-icon">🎉</span>
+            <div class="event-content">
+              <div class="event-title class">Guests arrive — Aperitivo</div>
+              <div class="event-note">Prosecco, snacks. Let people settle, introductions, tell the story of the bread.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">4:00 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title class">Class begins — Autolyse</div>
+              <div class="event-note">Everyone mixes their 500g flour + 375g water. Let it rest 30 min (more wine &amp; snacks).</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">4:30–6:00 pm</span>
+            <span class="event-icon">🙌</span>
+            <div class="event-content">
+              <div class="event-title class">Add starter &amp; salt → Stretch &amp; fold rounds</div>
+              <div class="event-note">4 rounds × 30 min. Snacks &amp; wine between rounds. Music on. This is the fun part.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">6:15 pm</span>
+            <span class="event-icon">🍞</span>
+            <div class="event-content">
+              <div class="event-title class">Shape &amp; pack to go</div>
+              <div class="event-note">Each guest shapes their loaf, into their oiled tupperware. Fridge overnight at home → bake Sunday morning.</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <span class="event-time">6:30 pm</span>
+            <span class="event-icon">🍝</span>
+            <div class="event-content">
+              <div class="event-title pasta">Dinner — Gnocchi alla Sorrentina</div>
+              <div class="event-note">Serve hot with red wine. Break out the loaves from practice bakes for the table.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PASTA RECIPE -->
+    <div class="section">
+      <h2 class="section-title">Gnocchi alla Sorrentina <span>Friday night · serves 9–10</span></h2>
+      <div class="recipe-grid">
+        <div class="recipe-card">
+          <h3>🍅 Tomato Sauce (make first)</h3>
+          <div class="recipe-step"><span class="step-num">1.</span> Sauté 3 garlic cloves in generous olive oil over medium heat until golden, ~2 min.</div>
+          <div class="recipe-step"><span class="step-num">2.</span> Add 1.2kg passata. Season with salt. Simmer 20 min, stirring occasionally.</div>
+          <div class="recipe-step"><span class="step-num">3.</span> Add a large handful of torn basil at the end. Taste and adjust salt. Set aside.</div>
+        </div>
+        <div class="recipe-card">
+          <h3>🫙 Assemble the Dish</h3>
+          <div class="recipe-step"><span class="step-num">1.</span> Boil gnocchi in well-salted water in batches. Pull them out 1 min early (al dente). Drain.</div>
+          <div class="recipe-step"><span class="step-num">2.</span> In a large baking dish: ladle sauce → gnocchi layer → torn mozzarella → more sauce → more mozzarella → Parmesan.</div>
+          <div class="recipe-step"><span class="step-num">3.</span> Finish with Parmesan on top. Drizzle olive oil. Cover with foil. Refrigerate overnight.</div>
+          <div class="recipe-step"><span class="step-num">4.</span> Saturday: bake covered at 180°C for 35 min. Uncover last 5 min to bubble &amp; brown. Let rest 10 min before serving.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="text-align:center; margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--border); color:var(--mid); font-size:0.75rem;">
+      Bread Class · Naples · May 16, 2026 &nbsp;·&nbsp; Buona fortuna e buon pane! 🍞
+    </div>
+
+  </div>
+</body>
+</html>

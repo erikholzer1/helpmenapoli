@@ -117,19 +117,6 @@ export default function HomeScreen() {
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Suggestion prompt */}
-        <TouchableOpacity
-          style={styles.suggestCard}
-          activeOpacity={0.85}
-          onPress={() => setContact('I think something should be added to your Top 10 lists:')}
-        >
-          <Ionicons name="bulb" size={18} color={Colors.gold} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.suggestTitle}>Think something belongs on a list?</Text>
-            <Text style={styles.suggestSub}>Know a spot the Top 10 lists are missing? Tell me — I'm always updating them.</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color={Colors.faint} />
-        </TouchableOpacity>
       </ScrollView>
 
       <ContactSheet subject={contact} onClose={() => setContact(null)} />

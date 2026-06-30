@@ -11,6 +11,8 @@ import {
   fetchUpcomingEvents, CATEGORY_META, CATEGORY_ORDER,
   type NaplesEvent, type EventCategory,
 } from '@/lib/events';
+import { usePremium } from '@/hooks/usePremium';
+import PaywallSheet from '@/components/PaywallSheet';
 
 // ─── date helpers ───────────────────────────────────────────────────────────
 
@@ -173,8 +175,10 @@ type LoadState =
   | { status: 'ready'; events: NaplesEvent[] };
 
 export default function EventsScreen() {
+  const { isPremium } = usePremium();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [state, setState] = useState<LoadState>({ status: 'loading' });
-  const [range, setRange] = useState<DateRange>('all');
+  const [range, setRange] = useState<DateRange>('weekend');
   const [activeCats, setActiveCats] = useState<Set<EventCategory>>(new Set());
   const [freeOnly, setFreeOnly] = useState(false);
 
@@ -198,16 +202,25 @@ export default function EventsScreen() {
 
   const renderFilters = () => (
     <View style={styles.filters}>
+      {!isPremium && (
+        <TouchableOpacity style={styles.upgradeBanner} onPress={() => setPaywallOpen(true)} activeOpacity={0.85}>
+          <Ionicons name="star" size={14} color={Colors.gold} />
+          <Text style={styles.upgradeBannerText}>Free: weekend events only — unlock all</Text>
+          <Ionicons name="chevron-forward" size={13} color={Colors.gold} />
+        </TouchableOpacity>
+      )}
       {/* Date range — segmented */}
       <View style={styles.segment}>
         {DATE_RANGES.map((r) => {
+          const locked = !isPremium && (r.id === 'today' || r.id === 'week' || r.id === 'all');
           const active = range === r.id;
           return (
             <TouchableOpacity
               key={r.id}
-              style={[styles.segmentBtn, active && styles.segmentBtnActive]}
-              onPress={() => setRange(r.id)}
+              style={[styles.segmentBtn, active && styles.segmentBtnActive, locked && styles.segmentBtnLocked]}
+              onPress={() => locked ? setPaywallOpen(true) : setRange(r.id)}
             >
+              {locked && <Ionicons name="lock-closed" size={9} color={Colors.mid} style={{ marginRight: 3 }} />}
               <Text style={[styles.segmentText, active && styles.segmentTextActive]}>{r.label}</Text>
             </TouchableOpacity>
           );
@@ -291,8 +304,9 @@ export default function EventsScreen() {
     );
   }
 
+  const effectiveRange: DateRange = isPremium ? range : 'weekend';
   const filtered = state.events.filter((e) =>
-    inRange(e, range) &&
+    inRange(e, effectiveRange) &&
     (activeCats.size === 0 || activeCats.has(e.category)) &&
     (!freeOnly || e.free)
   );
@@ -301,6 +315,7 @@ export default function EventsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <Header />
+      <PaywallSheet visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
@@ -349,12 +364,23 @@ const styles = StyleSheet.create({
   // ── filters ──
   filters: { paddingTop: 6, paddingBottom: 4 },
 
+  upgradeBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    backgroundColor: Colors.gold + '15', borderRadius: Radius.md,
+    borderWidth: 1, borderColor: Colors.gold + '40',
+    paddingVertical: 10, paddingHorizontal: 14, marginBottom: 12,
+  },
+  upgradeBannerText: {
+    flex: 1, fontFamily: 'DMSans-Medium', fontSize: 13, color: Colors.dark,
+  },
+
   segment: {
     flexDirection: 'row', backgroundColor: Colors.light,
     borderRadius: Radius.md, padding: 3, marginBottom: 12,
   },
-  segmentBtn: { flex: 1, alignItems: 'center', paddingVertical: 8, borderRadius: 10 },
+  segmentBtn: { flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', paddingVertical: 8, borderRadius: 10 },
   segmentBtnActive: { backgroundColor: Colors.white, ...Shadow.sm },
+  segmentBtnLocked: { opacity: 0.5 },
   segmentText: { fontFamily: 'DMSans-Medium', fontSize: 13, color: Colors.mid },
   segmentTextActive: { color: Colors.dark },
 

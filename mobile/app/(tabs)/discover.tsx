@@ -10,6 +10,10 @@ import { Colors, Shadow, Radius } from '@/constants/Colors';
 import { discoverLists, type DiscoverList, type Spot } from '@/constants/discover';
 import { topImages } from '@/constants/topImages';
 import Map from '@/components/Map';
+import { usePremium } from '@/hooks/usePremium';
+import PaywallSheet from '@/components/PaywallSheet';
+
+const FREE_LIST_IDS = new Set(['pizzerias', 'aperitivo', 'artisan', 'museums']);
 
 const SCRIM = ['rgba(26,20,16,0.45)', 'rgba(26,20,16,0)', 'rgba(26,20,16,0.82)'] as const;
 const BANNER_SCRIM = ['rgba(26,20,16,0.15)', 'rgba(26,20,16,0)', 'rgba(26,20,16,0.82)'] as const;
@@ -19,18 +23,26 @@ function openInMaps(spot: Spot) {
   Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`);
 }
 
-function CategoryCard({ list, onPress }: { list: DiscoverList; onPress: () => void }) {
+function CategoryCard({ list, onPress, locked }: { list: DiscoverList; onPress: () => void; locked?: boolean }) {
   const ready = list.items.length > 0;
   const photo = topImages[list.id];
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
       {photo ? <Image source={photo} style={styles.fill} resizeMode="cover" /> : null}
+      {locked && <View style={styles.cardLockOverlay} />}
       <LinearGradient colors={SCRIM} locations={[0, 0.4, 1]} style={styles.cardScrim}>
-        <View style={[styles.badge, ready ? styles.badgeReady : styles.badgeSoon]}>
-          <Text style={[styles.badgeText, ready ? styles.badgeTextReady : styles.badgeTextSoon]}>
-            {ready ? 'TOP 10' : 'SOON'}
-          </Text>
-        </View>
+        {locked ? (
+          <View style={styles.lockBadge}>
+            <Ionicons name="lock-closed" size={11} color={Colors.white} />
+            <Text style={styles.lockBadgeText}>UNLOCK</Text>
+          </View>
+        ) : (
+          <View style={[styles.badge, ready ? styles.badgeReady : styles.badgeSoon]}>
+            <Text style={[styles.badgeText, ready ? styles.badgeTextReady : styles.badgeTextSoon]}>
+              {ready ? 'TOP 10' : 'SOON'}
+            </Text>
+          </View>
+        )}
         <Text style={styles.cardLabel}>{list.label}</Text>
       </LinearGradient>
     </TouchableOpacity>
@@ -108,11 +120,19 @@ function ListDetail({ list, onBack }: { list: DiscoverList; onBack: () => void }
 
 export default function DiscoverScreen() {
   const router = useRouter();
+  const { isPremium } = usePremium();
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const [group, setGroup] = useState<'food' | 'activity'>('food');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const selected = selectedId ? discoverLists.find((l) => l.id === selectedId) ?? null : null;
   if (selected) return <ListDetail list={selected} onBack={() => setSelectedId(null)} />;
+
+  function handleCardPress(list: DiscoverList) {
+    const locked = !isPremium && !FREE_LIST_IDS.has(list.id);
+    if (locked) { setPaywallOpen(true); return; }
+    setSelectedId(list.id);
+  }
 
   const leftSub = group === 'food' ? 'food' : 'day';
   const rightSub = group === 'food' ? 'drink' : 'night';
@@ -123,6 +143,7 @@ export default function DiscoverScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
+      <PaywallSheet visible={paywallOpen} onClose={() => setPaywallOpen(false)} />
       <View style={styles.header}>
         <Text style={styles.headerEyebrow}>CURATED BY LOCALS</Text>
         <Text style={styles.headerTitle}>Top 10 Naples lists</Text>
@@ -158,11 +179,11 @@ export default function DiscoverScreen() {
         <View style={styles.columns}>
           <View style={styles.column}>
             <Text style={styles.colHeader}>{leftTitle}</Text>
-            {left.map((list) => <CategoryCard key={list.id} list={list} onPress={() => setSelectedId(list.id)} />)}
+            {left.map((list) => <CategoryCard key={list.id} list={list} locked={!isPremium && !FREE_LIST_IDS.has(list.id)} onPress={() => handleCardPress(list)} />)}
           </View>
           <View style={styles.column}>
             <Text style={styles.colHeader}>{rightTitle}</Text>
-            {right.map((list) => <CategoryCard key={list.id} list={list} onPress={() => setSelectedId(list.id)} />)}
+            {right.map((list) => <CategoryCard key={list.id} list={list} locked={!isPremium && !FREE_LIST_IDS.has(list.id)} onPress={() => handleCardPress(list)} />)}
           </View>
         </View>
       </ScrollView>
@@ -219,6 +240,16 @@ const styles = StyleSheet.create({
   badgeText: { fontFamily: 'DMSans-Medium', fontSize: 9, letterSpacing: 0.6 },
   badgeTextReady: { color: Colors.dark },
   badgeTextSoon: { color: Colors.mid },
+
+  cardLockOverlay: {
+    ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)', zIndex: 1, borderRadius: Radius.md,
+  },
+  lockBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: Radius.pill,
+    paddingHorizontal: 8, paddingVertical: 4, alignSelf: 'flex-start',
+  },
+  lockBadgeText: { fontFamily: 'DMSans-Medium', fontSize: 9, letterSpacing: 0.6, color: Colors.white },
   cardLabel: { fontFamily: 'PlayfairDisplay-Bold', fontSize: 15, color: Colors.white, textShadowColor: 'rgba(0,0,0,0.4)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
 
   detailHeader: {

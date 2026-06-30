@@ -66,28 +66,28 @@ export default function HomeScreen() {
           <NavCard
             title="Language Help"
             subtitle={"Italian phrases, daily vocab & grammar for real-life situations in Naples"}
-            iconName="chatbubble-ellipses"
+            iconName="language"
             gradient={['#C79A2E', '#6E5316'] as const}
             onPress={() => router.push('/(tabs)/language')}
           />
           <NavCard
             title="Top 10 Lists"
             subtitle={"The best places to eat, drink & explore — curated by a local"}
-            iconName="compass"
+            iconName="trophy"
             gradient={['#C8392B', '#7A1C15'] as const}
             onPress={() => router.push('/(tabs)/discover')}
           />
           <NavCard
             title="What's On"
             subtitle={"Events, gigs & markets happening around Naples this week"}
-            iconName="calendar"
+            iconName="ticket"
             gradient={['#3E8E6B', '#1E4D39'] as const}
             onPress={() => router.push('/(tabs)/events')}
           />
           <NavCard
             title="Experiences"
             subtitle={"Private tours, cooking classes & handpicked day trips with Erik"}
-            iconName="sparkles"
+            iconName="compass"
             gradient={['#7B5EA7', '#3F2F60'] as const}
             onPress={() => router.push('/(tabs)/experiences')}
           />
@@ -105,9 +105,9 @@ export default function HomeScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.wideCard}
           >
-            <Ionicons name="subway" size={120} color="rgba(255,255,255,0.10)" style={styles.wideCardWatermark} />
+            <Ionicons name="map" size={120} color="rgba(255,255,255,0.10)" style={styles.wideCardWatermark} />
             <View style={styles.navCardIconWrap}>
-              <Ionicons name="subway" size={26} color={Colors.white} />
+              <Ionicons name="map" size={26} color={Colors.white} />
             </View>
             <Text style={styles.navCardTitle}>Getting Around</Text>
             <Text style={styles.navCardSub}>Metro, funiculars, trains, ferries & airport — hours, maps & tickets</Text>

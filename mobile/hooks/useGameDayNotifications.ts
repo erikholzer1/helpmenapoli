@@ -48,12 +48,18 @@ async function scheduleGameDayNotifications() {
     const trigger = new Date(year, month - 1, day, 9, 0, 0);
     if (trigger <= new Date()) continue; // already past
 
+    let trafficFrom = '';
+    if (game.time) {
+      const [h, min] = game.time.split(':').map(Number);
+      const warnH = h - 4;
+      if (warnH >= 0) trafficFrom = ` from ${warnH}:${String(min).padStart(2, '0')}`;
+    }
     const kickoffText = game.time ? ` Kickoff ${game.time}.` : '';
 
     await Notifications.scheduleNotificationAsync({
       content: {
         title: `🔵 Napoli home game today — plan your route`,
-        body: `Heavy traffic expected around Fuorigrotta and on the Tangenziale (Centro exit).${kickoffText} Allow extra time if travelling near the Maradona.`,
+        body: `The entire Tangenziale will have heavy traffic${trafficFrom}, especially around the Centro exit and Fuorigrotta.${kickoffText} Allow extra time.`,
         data: { type: 'gameday', date: game.date },
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: trigger },

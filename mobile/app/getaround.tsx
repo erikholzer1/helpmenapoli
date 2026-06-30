@@ -1,6 +1,7 @@
 import {
   View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Linking,
 } from 'react-native';
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +11,7 @@ import {
   transitIntro, tickets, transitSections, goodToKnow, NETWORK_MAP_URL, NETWORK_MAP_IMG,
   alerts, ferries, taxis, type TransitLine, type TransitSection,
 } from '@/constants/transit';
+import DriverSheet from '@/components/DriverSheet';
 
 function open(url: string) {
   Linking.openURL(url).catch(() => {});
@@ -82,6 +84,7 @@ function Section({ section }: { section: TransitSection }) {
 
 export default function GetAroundScreen() {
   const router = useRouter();
+  const [driverOpen, setDriverOpen] = useState(false);
   const FERRY = '#1C6E8C';
   const TAXI = '#C79A2E';
 
@@ -97,6 +100,21 @@ export default function GetAroundScreen() {
       </LinearGradient>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
+
+        {/* Request a driver — prominent CTA */}
+        <TouchableOpacity style={styles.driverBanner} activeOpacity={0.88} onPress={() => setDriverOpen(true)}>
+          <View style={styles.driverIconWrap}>
+            <Ionicons name="car" size={22} color={Colors.dark} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.driverBannerTitle}>Need a private driver?</Text>
+            <Text style={styles.driverBannerSub}>Airport, port, day trips — door to door with Erik's trusted drivers.</Text>
+          </View>
+          <View style={styles.driverArrow}>
+            <Ionicons name="arrow-forward" size={16} color={Colors.dark} />
+          </View>
+        </TouchableOpacity>
+
         {/* Official network map — first thing you see */}
         <View style={styles.mapWrap}>
           <TouchableOpacity activeOpacity={0.9} onPress={() => open(NETWORK_MAP_URL)}>
@@ -256,6 +274,8 @@ export default function GetAroundScreen() {
           Operated by ANM, Trenitalia, EAV & the ferry lines under the UnicoCampania fare system. Times & prices verified from official sources June 2026 — always reconfirm on the day.
         </Text>
       </ScrollView>
+
+      <DriverSheet visible={driverOpen} onClose={() => setDriverOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -274,6 +294,24 @@ const styles = StyleSheet.create({
   },
   eyebrow: { fontFamily: 'DMSans-Medium', fontSize: 11, letterSpacing: 2.5, color: Colors.goldSoft, marginBottom: 4 },
   title: { fontFamily: 'PlayfairDisplay-Bold', fontSize: 28, color: Colors.gold },
+
+  driverBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    marginHorizontal: 16, marginTop: 16,
+    backgroundColor: Colors.gold, borderRadius: Radius.lg,
+    padding: 16, ...Shadow.md,
+  },
+  driverIconWrap: {
+    width: 46, height: 46, borderRadius: Radius.md,
+    backgroundColor: 'rgba(0,0,0,0.12)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  driverBannerTitle: { fontFamily: 'DMSans-Medium', fontSize: 16, color: Colors.dark, marginBottom: 2 },
+  driverBannerSub: { fontFamily: 'DMSans-Regular', fontSize: 12, color: 'rgba(26,20,16,0.7)', lineHeight: 16 },
+  driverArrow: {
+    width: 32, height: 32, borderRadius: Radius.pill,
+    backgroundColor: 'rgba(0,0,0,0.1)', alignItems: 'center', justifyContent: 'center',
+  },
 
   mapWrap: { marginHorizontal: 16, marginTop: 16 },
   officialMap: { width: '100%', height: 220, borderRadius: 16, backgroundColor: Colors.surface },

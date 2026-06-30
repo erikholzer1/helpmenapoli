@@ -16,9 +16,9 @@ export type TextField  = { id: string; label: string; type: 'text'; placeholder?
 export type BookingField = SelectField | NumberField | TextField;
 
 export type BookingConfig =
-  | { type: 'rsvp';    fixedDates: FixedDate[]; stayCuned?: boolean; hasPrivate?: boolean; privateFields?: BookingField[] }
+  | { type: 'rsvp';    fixedDates: FixedDate[]; stayCuned?: boolean; hasPrivate?: boolean; privateFields?: BookingField[]; extraRequestFields?: BookingField[] }
   | { type: 'inquiry'; fields: BookingField[] }
-  | { type: 'hybrid';  fixedDates: FixedDate[]; stayCuned?: boolean; privateFields: BookingField[] };
+  | { type: 'hybrid';  fixedDates: FixedDate[]; stayCuned?: boolean; privateFields: BookingField[]; extraRequestFields?: BookingField[] };
 
 export type Experience = {
   id: string;
@@ -32,6 +32,7 @@ export type Experience = {
 export const REQUEST_DATE_FIELDS: BookingField[] = [
   { id: 'req_name',   label: 'Your name', type: 'text', placeholder: 'First name is fine', required: true },
   { id: 'req_date',   label: 'Preferred date(s)', type: 'text', placeholder: 'e.g. 20 July, any Saturday in August', required: true },
+  { id: 'req_time',   label: 'Preferred time', type: 'text', placeholder: 'e.g. morning, 10am — leave blank if flexible' },
   { id: 'req_people', label: 'Number of people', type: 'number', min: 1, max: 30, required: true },
   { id: 'req_note',   label: 'Anything else?', type: 'text', placeholder: 'Optional — dietary needs, questions…' },
 ];
@@ -108,9 +109,12 @@ export const experiences: Experience[] = [
     booking: {
       type: 'inquiry',
       fields: [
-        { id: 'date',   label: 'Preferred date', type: 'text', placeholder: 'e.g. 10 July, flexible on weekdays', required: true },
-        { id: 'people', label: 'Number of people', type: 'number', min: 1, max: 20, required: true },
-        { id: 'focus',  label: 'Any focus areas?', type: 'text', placeholder: 'e.g. street food, history, Spaccanapoli…' },
+        { id: 'date',      label: 'Preferred date', type: 'text', placeholder: 'e.g. 10 July, flexible on weekdays', required: true },
+        { id: 'time',      label: 'Preferred time', type: 'text', placeholder: 'e.g. morning, 10am — leave blank if flexible' },
+        { id: 'people',    label: 'Number of people', type: 'number', min: 1, max: 20, required: true },
+        { id: 'tour_type', label: 'What kind of tour?', type: 'select', options: ['Mix of both', 'Walking only (castles, churches, landmarks)', 'Food tour only'], required: true },
+        { id: 'hours',     label: 'How many hours?', type: 'select', options: ['2–3 hours', 'Half day (4h)', 'Full day (6–8h)'], required: true },
+        { id: 'focus',     label: 'Any focus areas?', type: 'text', placeholder: 'e.g. Spaccanapoli, street food, specific landmarks…' },
       ],
     },
   },
@@ -124,8 +128,12 @@ export const experiences: Experience[] = [
       type: 'hybrid',
       fixedDates: [],
       stayCuned: true,
+      extraRequestFields: [
+        { id: 'req_fitness', label: 'Hiking level', type: 'select', options: ['Easy pace', 'Moderate', 'Challenging'], required: true },
+      ],
       privateFields: [
         { id: 'date',    label: 'Preferred date(s)', type: 'text', placeholder: 'e.g. any weekend in August', required: true },
+        { id: 'time',    label: 'Preferred time', type: 'text', placeholder: 'e.g. morning start — leave blank if flexible' },
         { id: 'people',  label: 'Number of people', type: 'number', min: 1, max: 15, required: true },
         { id: 'trail',   label: 'Trail preference', type: 'select', options: ['Vesuvius', 'Sentiero degli Dei', 'Monte Faito', 'Ischia', 'Surprise me!'] },
         { id: 'fitness', label: 'Fitness level', type: 'select', options: ['Easy pace', 'Moderate', 'Challenging'], required: true },
@@ -143,9 +151,9 @@ export const experiences: Experience[] = [
       type: 'inquiry',
       fields: [
         { id: 'date',       label: 'Preferred date(s)', type: 'text', placeholder: 'e.g. early July, flexible', required: true },
-        { id: 'people',     label: 'Number of people', type: 'number', min: 1, max: 8, required: true },
+        { id: 'time',       label: 'Preferred time', type: 'text', placeholder: 'e.g. early morning — leave blank if flexible' },
+        { id: 'people',     label: 'Number of people', type: 'number', min: 1, max: 4, required: true },
         { id: 'experience', label: 'Fishing experience', type: 'select', options: ['First time', 'Occasional', 'Experienced'], required: true },
-        { id: 'style',      label: 'Style', type: 'select', options: ['Traditional with local fishermen', 'Sport fishing', 'Either / no preference'] },
         { id: 'notes',      label: 'Anything else?', type: 'text', placeholder: 'e.g. kids coming, seasickness concerns…' },
       ],
     },
@@ -196,7 +204,7 @@ export const experiences: Experience[] = [
       type: 'inquiry',
       fields: [
         { id: 'event_type', label: 'What type of experience?', type: 'text', placeholder: 'e.g. food tour, sunset cruise, cooking + dining…', required: true },
-        { id: 'date',       label: 'When are you in Naples?', type: 'text', placeholder: 'e.g. 10–17 July', required: true },
+        { id: 'date',       label: 'What dates would work best for you?', type: 'text', placeholder: 'e.g. 10–17 July, flexible on weekends', required: true },
         { id: 'hours',      label: 'How many hours?', type: 'select', options: ['2–3 hours', 'Half day (4h)', 'Full day (8h)', 'Multiple days', 'Flexible'], required: true },
         { id: 'people',     label: 'Number of people', type: 'number', min: 1, max: 50, required: true },
         { id: 'budget',     label: 'Budget per person (rough)', type: 'select', options: ['Under €50', '€50–100', '€100–200', 'Flexible / let\'s talk'] },

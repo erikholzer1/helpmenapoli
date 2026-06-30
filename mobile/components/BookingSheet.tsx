@@ -25,16 +25,13 @@ function buildInquiryMessage(expTitle: string, fields: BookingField[], answers: 
   return lines.join('\n');
 }
 
-function buildDateRequestMessage(expTitle: string, answers: Record<string, string>): string {
-  const lines = [
-    `📅 *DATE REQUEST — ${expTitle}*`,
-    '',
-    `Name: ${answers['req_name'] || '—'}`,
-    `Preferred date(s): ${answers['req_date'] || '—'}`,
-    `Number of people: ${answers['req_people'] || '—'}`,
-  ];
-  if (answers['req_note']) lines.push(`Notes: ${answers['req_note']}`);
-  lines.push('', 'I\'d love to join when you set a date — please keep me posted!');
+function buildDateRequestMessage(expTitle: string, fields: BookingField[], answers: Record<string, string>): string {
+  const lines = [`📅 *DATE REQUEST — ${expTitle}*`, ''];
+  fields.forEach((f) => {
+    const val = f.type === 'number' ? (answers[f.id] || String((f as any).min ?? 1)) : (answers[f.id] || '');
+    if (val) lines.push(`• ${f.label}: ${val}`);
+  });
+  lines.push('', "I'd love to join when you set a date — please keep me posted!");
   return lines.join('\n');
 }
 
@@ -157,7 +154,8 @@ export default function BookingSheet({ exp, onClose }: Props) {
     if (!exp) return;
     let msg = '';
     if (mode === 'request-date') {
-      msg = buildDateRequestMessage(exp.title, answers);
+      const extraReq: BookingField[] = (exp.booking as any).extraRequestFields ?? [];
+      msg = buildDateRequestMessage(exp.title, [...REQUEST_DATE_FIELDS, ...extraReq], answers);
     } else {
       const fields = mode === 'private'
         ? (exp.booking.type !== 'inquiry' ? exp.booking.privateFields : exp.booking.fields)
@@ -194,7 +192,8 @@ export default function BookingSheet({ exp, onClose }: Props) {
       ? (booking.privateFields ?? [])
       : [];
 
-  const requestFields = REQUEST_DATE_FIELDS;
+  const extraReqFields: BookingField[] = (booking as any).extraRequestFields ?? [];
+  const requestFields = [...REQUEST_DATE_FIELDS, ...extraReqFields];
   const canSubmitPrivate = canSubmit(privateFields);
   const canSubmitRequest = canSubmit(requestFields);
 

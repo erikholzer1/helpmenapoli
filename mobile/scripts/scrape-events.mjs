@@ -33,6 +33,7 @@ import { scrapeBandsintown } from './scrapers/bandsintown.mjs';
 import { scrapeTicketone } from './scrapers/ticketone.mjs';
 import { scrapeDice } from './scrapers/dice.mjs';
 import { scrapeColdiretti } from './scrapers/coldiretti.mjs';
+import { scrapeNapoliateatro } from './scrapers/napoliateatro.mjs';
 import { scrapeStrikes } from './scrapers/strikes.mjs';
 import { scrapeNapoliMatches } from './scrapers/napoli-matches.mjs';
 
@@ -58,7 +59,8 @@ const SOURCES = [
   ['bandsintown', scrapeBandsintown],
   ['ticketone',   scrapeTicketone],
   ['dice',        scrapeDice],
-  ['coldiretti',  () => scrapeColdiretti()],
+  ['coldiretti',    () => scrapeColdiretti()],
+  ['napoliateatro', () => scrapeNapoliateatro()],
 ];
 
 async function main() {

@@ -6,3 +6,6 @@
 *.m4a
 *.mp4
 *.tmp
+
+# Local Netlify folder
+.netlify

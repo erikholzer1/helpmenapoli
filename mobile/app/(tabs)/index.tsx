@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Colors, Shadow, Radius, Gradients } from '@/constants/Colors';
 import ContactSheet from '@/components/ContactSheet';
 
@@ -15,7 +16,7 @@ const CARD_W = (width - 16 * 2 - 12) / 2;
 type NavCardProps = {
   title: string;
   subtitle: string;
-  iconName: React.ComponentProps<typeof Ionicons>['name'];
+  iconName: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
   gradient: readonly [string, string, ...string[]];
   onPress: () => void;
 };
@@ -24,9 +25,9 @@ function NavCard({ title, subtitle, iconName, gradient, onPress }: NavCardProps)
   return (
     <TouchableOpacity style={styles.navCardWrap} onPress={onPress} activeOpacity={0.9}>
       <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.navCard}>
-        <Ionicons name={iconName} size={110} color="rgba(255,255,255,0.10)" style={styles.navCardWatermark} />
+        <MaterialCommunityIcons name={iconName} size={110} color="rgba(255,255,255,0.10)" style={styles.navCardWatermark} />
         <View style={styles.navCardIconWrap}>
-          <Ionicons name={iconName} size={26} color={Colors.white} />
+          <MaterialCommunityIcons name={iconName} size={26} color={Colors.white} />
         </View>
         <Text style={styles.navCardTitle}>{title}</Text>
         <Text style={styles.navCardSub}>{subtitle}</Text>
@@ -66,28 +67,28 @@ export default function HomeScreen() {
           <NavCard
             title="Language Help"
             subtitle={"Italian phrases, daily vocab & grammar for real-life situations in Naples"}
-            iconName="language"
+            iconName="translate"
             gradient={['#C79A2E', '#6E5316'] as const}
             onPress={() => router.push('/(tabs)/language')}
           />
           <NavCard
             title="Top 10 Lists"
             subtitle={"The best places to eat, drink & explore — curated by a local"}
-            iconName="trophy"
+            iconName="trophy-variant"
             gradient={['#C8392B', '#7A1C15'] as const}
             onPress={() => router.push('/(tabs)/discover')}
           />
           <NavCard
             title="What's On"
             subtitle={"Events, gigs & markets happening around Naples this week"}
-            iconName="ticket"
+            iconName="calendar-star"
             gradient={['#3E8E6B', '#1E4D39'] as const}
             onPress={() => router.push('/(tabs)/events')}
           />
           <NavCard
             title="Experiences"
             subtitle={"Private tours, cooking classes & handpicked day trips with Erik"}
-            iconName="sparkles"
+            iconName="compass-rose"
             gradient={['#7B5EA7', '#3F2F60'] as const}
             onPress={() => router.push('/(tabs)/experiences')}
           />
@@ -105,9 +106,9 @@ export default function HomeScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.wideCard}
           >
-            <Ionicons name="subway" size={120} color="rgba(255,255,255,0.10)" style={styles.wideCardWatermark} />
+            <MaterialCommunityIcons name="map-legend" size={120} color="rgba(255,255,255,0.10)" style={styles.wideCardWatermark} />
             <View style={styles.navCardIconWrap}>
-              <Ionicons name="subway" size={26} color={Colors.white} />
+              <MaterialCommunityIcons name="map-legend" size={26} color={Colors.white} />
             </View>
             <Text style={styles.navCardTitle}>Getting Around</Text>
             <Text style={styles.navCardSub}>Metro, funiculars, trains, ferries & airport — hours, maps & tickets</Text>

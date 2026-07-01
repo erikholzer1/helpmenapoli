@@ -12,20 +12,17 @@ type Answers = Record<string, string>;
 const ERIK_PHONE = '393331489589'; // Italian format, no +
 
 function buildDriverMessage(a: Answers): string {
-  const lines = [
-    '🚗 *DRIVER REQUEST — HelpMeNapoli*',
-    '',
-    `Name: ${a.name || '—'}`,
-    `Date: ${a.date || '—'}`,
-    `Time: ${a.time || '—'}`,
-    `From: ${a.from || '—'}`,
-    `To: ${a.to || '—'}`,
-    `Service: ${a.service || '—'}`,
-    `Luggage: ${a.luggage || '—'}`,
-  ];
-  if (a.flight_info) lines.push(`Flight / ferry / train: ${a.flight_info}`);
-  if (a.notes) lines.push(`Notes: ${a.notes}`);
-  lines.push('', 'Please confirm availability and price. Thanks!');
+  const lines = [`Hi Erik! I'd like to request a driver.`, ''];
+  lines.push(`• Name: ${a.name || '—'}`);
+  lines.push(`• Date: ${a.date || '—'}`);
+  lines.push(`• Time: ${a.time || '—'}`);
+  lines.push(`• Pickup: ${a.from || '—'}`);
+  lines.push(`• Drop-off: ${a.to || '—'}`);
+  lines.push(`• Service: ${a.service || '—'}`);
+  lines.push(`• Luggage: ${a.luggage || '—'}`);
+  if (a.flight_info) lines.push(`• Flight / ferry / train: ${a.flight_info}`);
+  if (a.notes) lines.push(`• Notes: ${a.notes}`);
+  lines.push('', 'Please let me know availability and price. Thanks!');
   return lines.join('\n');
 }
 

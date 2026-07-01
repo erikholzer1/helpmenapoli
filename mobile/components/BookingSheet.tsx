@@ -14,24 +14,24 @@ import { sendWhatsApp, sendEmail } from './ContactSheet';
 // ─── message builders ─────────────────────────────────────────────────────────
 
 function buildInquiryMessage(expTitle: string, fields: BookingField[], answers: Record<string, string>): string {
-  const lines = [`Hi Erik! I'd like to request: *${expTitle}*`, ''];
+  const lines = [`Hi Erik! I'd like to book the *${expTitle}*.`, ''];
   fields.forEach((f) => {
     const val = f.type === 'number'
       ? (answers[f.id] || String(f.min ?? 1))
       : (answers[f.id] || '');
     if (val) lines.push(`• ${f.label}: ${val}`);
   });
-  lines.push('', 'Please send me details on how to confirm and pay. Thanks!');
+  lines.push('', 'Please let me know how to confirm and pay. Thanks!');
   return lines.join('\n');
 }
 
 function buildDateRequestMessage(expTitle: string, fields: BookingField[], answers: Record<string, string>): string {
-  const lines = [`📅 *DATE REQUEST — ${expTitle}*`, ''];
+  const lines = [`Hi Erik! I'm interested in the *${expTitle}* and would love to join when you set a date.`, ''];
   fields.forEach((f) => {
     const val = f.type === 'number' ? (answers[f.id] || String((f as any).min ?? 1)) : (answers[f.id] || '');
     if (val) lines.push(`• ${f.label}: ${val}`);
   });
-  lines.push('', "I'd love to join when you set a date — please keep me posted!");
+  lines.push('', 'Please keep me posted — thanks!');
   return lines.join('\n');
 }
 

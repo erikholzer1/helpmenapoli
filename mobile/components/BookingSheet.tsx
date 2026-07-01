@@ -9,7 +9,7 @@ import {
   type Experience, type FixedDate, type BookingField,
   REQUEST_DATE_FIELDS,
 } from '@/constants/experiences';
-import { openWhatsApp, openEmail } from './ContactSheet';
+import { sendWhatsApp, sendEmail } from './ContactSheet';
 
 // ─── message builders ─────────────────────────────────────────────────────────
 
@@ -162,8 +162,8 @@ export default function BookingSheet({ exp, onClose }: Props) {
         : exp.booking.type === 'inquiry' ? exp.booking.fields : [];
       msg = buildInquiryMessage(exp.title, fields ?? [], answers);
     }
-    if (channel === 'whatsapp') openWhatsApp(msg);
-    else openEmail(msg);
+    if (channel === 'whatsapp') sendWhatsApp(msg);
+    else sendEmail(`Booking request — ${exp.title}`, msg);
     handleClose();
   }
 

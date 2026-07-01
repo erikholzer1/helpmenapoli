@@ -5,7 +5,7 @@ import {
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Shadow, Radius } from '@/constants/Colors';
-import { openWhatsApp, openEmail } from './ContactSheet';
+import { sendWhatsApp, sendEmail } from './ContactSheet';
 
 type Answers = Record<string, string>;
 
@@ -81,8 +81,8 @@ export default function DriverSheet({ visible, onClose }: Props) {
 
   function send(channel: 'whatsapp' | 'email') {
     const msg = buildDriverMessage(a);
-    if (channel === 'whatsapp') openWhatsApp(msg);
-    else openEmail(msg);
+    if (channel === 'whatsapp') sendWhatsApp(msg);
+    else sendEmail('Driver request — HelpMeNapoli', msg);
     handleClose();
   }
 

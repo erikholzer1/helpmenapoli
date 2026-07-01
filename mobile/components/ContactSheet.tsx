@@ -5,13 +5,22 @@ import { Colors, Radius } from '@/constants/Colors';
 const WHATSAPP = '393331489589';
 const EMAIL = 'help.me.napoli@gmail.com';
 
+// For the simple ContactSheet (subject is a short topic string).
 export function openWhatsApp(subject: string) {
-  const msg = `Hi Erik, I'm interested in: ${subject}. Could you send me some info?`;
+  const msg = `Hi Erik! I'd like to ask about: ${subject}.`;
   Linking.openURL(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`).catch(() => {});
 }
 export function openEmail(subject: string) {
-  const body = `Hi Erik,%0A%0A${subject}%0A%0A`;
+  const body = `Hi Erik,%0A%0A`;
   Linking.openURL(`mailto:${EMAIL}?subject=${encodeURIComponent('HelpMeNapoli — ' + subject)}&body=${body}`).catch(() => {});
+}
+
+// For BookingSheet / DriverSheet — message is already fully formatted.
+export function sendWhatsApp(msg: string) {
+  Linking.openURL(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`).catch(() => {});
+}
+export function sendEmail(subject: string, body: string) {
+  Linking.openURL(`mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`).catch(() => {});
 }
 
 // A bottom-sheet that lets the user reach Erik by WhatsApp or email.

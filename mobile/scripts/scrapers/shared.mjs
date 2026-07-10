@@ -31,7 +31,7 @@ export function haversineKm(a, b) {
 // 6 buckets, or null to DROP (per the rule: only events people clearly
 // understand and would slot into one of these).
 const CATEGORY_RULES = [
-  { cat: 'music',    type: ['MusicEvent', 'Festival'], kw: ['concert', 'concerto', 'live', 'dj', 'club', 'disco', 'gig', 'band', 'festival musicale', 'rave', 'techno', 'jazz', 'rock', 'nightlife', 'serata'] },
+  { cat: 'music',    type: ['MusicEvent', 'Festival'], kw: ['concert', 'concerto', 'live', 'dj', 'club', 'disco', 'gig', 'band', 'festival musicale', 'rave', 'techno', 'jazz', 'rock', 'nightlife', 'serata', 'musica'] },
   { cat: 'theater',  type: ['TheaterEvent', 'DanceEvent', 'ScreeningEvent'], kw: ['teatro', 'theatre', 'theater', 'spettacolo', 'opera', 'balletto', 'danza', 'cinema', 'film', 'commedia', 'musical'] },
   { cat: 'food',     type: ['FoodEvent'], kw: ['sagra', 'food', 'cibo', 'degustazione', 'tasting', 'wine', 'vino', 'birra', 'beer', 'street food', 'cena', 'gastronom', 'pizza', 'cocktail', 'aperitivo'] },
   { cat: 'wellness', type: [], kw: ['yoga', 'meditazion', 'wellness', 'benessere', 'pilates', 'trekking', 'hiking', 'escursione', 'fitness', 'retreat', 'spa', 'massa'] },
@@ -151,4 +151,154 @@ export function dedupe(rows) {
   const seen = new Map();
   for (const r of rows) if (r) seen.set(r.external_id, r);
   return [...seen.values()];
+}
+
+// ── Cross-source dedup ───────────────────────────────────────────────────────
+// Different sites list the SAME real-world event under different titles,
+// venues and (per-source) external_id hashes — e.g. "Coez in concerto" shows
+// up on both iltaccodibacco and campaniaevents. dedupe() above only catches
+// exact repeats within one source; this catches the same event across sources
+// by matching a normalized title + date.
+
+const ITALIAN_MONTHS = {
+  gennaio: '01', febbraio: '02', marzo: '03', aprile: '04',
+  maggio: '05', giugno: '06', luglio: '07', agosto: '08',
+  settembre: '09', ottobre: '10', novembre: '11', dicembre: '12',
+};
+
+// Extracts the earliest future date mentioned in Italian text, e.g.
+// "venerdì 3 luglio 2026", "dal 3 luglio 2026", "1° luglio 2026".
+export function extractItalianDate(text) {
+  const clean = text.toLowerCase();
+  const monthNames = Object.keys(ITALIAN_MONTHS).join('|');
+  const re = new RegExp(`(\\d{1,2})[°º]?\\s+(${monthNames})\\s+(20\\d{2})`, 'gi');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let earliest = null;
+  let m;
+  while ((m = re.exec(clean)) !== null) {
+    const day   = m[1].padStart(2, '0');
+    const month = ITALIAN_MONTHS[m[2].toLowerCase()];
+    const year  = m[3];
+    const iso   = `${year}-${month}-${day}`;
+    const d = new Date(iso);
+    if (d >= today && (!earliest || d < new Date(earliest))) earliest = iso;
+  }
+  return earliest;
+}
+
+// Real listings for the same show vary wildly in wording across sites —
+// "Coez in concerto all'Anfiteatro degli Scavi di Pompei" vs "Pompei | COEZ
+// Live 2026 - From the Rooftop" — so exact-string matching after cleanup
+// isn't enough. Instead: same date + significant-word overlap between titles.
+const TITLE_STOPWORDS = new Set([
+  'di', 'del', 'della', 'dei', 'degli', 'delle', 'la', 'lo', 'il', 'le', 'i', 'gli',
+  'un', 'una', 'in', 'a', 'al', 'allo', 'alla', 'all', 'agli', 'con', 'e', 'per',
+  'da', 'su', 'the', 'and', 'from', 'ore',
+  'concerto', 'concert', 'live', 'tour', 'festival', 'show', 'evento', 'edizione',
+  // Generic event-description nouns — too common across unrelated shows to be
+  // a useful signal (caused "Premio Paolo Tesauro" to falsely match
+  // "Premio Napoli in Danza" on the word "premio" alone).
+  'premio', 'presentazione', 'anteprima', 'rassegna', 'mostra', 'giornata',
+  'centro', 'dedicato', 'scavi', 'spettacolo',
+  // City/venue names — real signal for confirming a match, but too weak to
+  // be the ONLY shared word (many unrelated events share a city or venue).
+  'napoli', 'pompei', 'caserta', 'arena', 'teatro', 'reggia', 'museo', 'palazzo',
+  'piazza', 'anfiteatro', 'palapartenope', 'stadio', 'villa',
+]);
+
+function titleTokens(title) {
+  return title
+    .replace(/([a-z])([A-Z])/g, '$1 $2') // split glued camelCase, e.g. "TonyPitony"
+    .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip accents (combining diacritical marks)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && !TITLE_STOPWORDS.has(w) && !/^(19|20)\d{2}$/.test(w));
+}
+
+// Same event if they share enough distinctive words (e.g. the artist name) —
+// requires at least one shared token of length >= 4 to avoid coincidental
+// short-word matches, and that overlap covers at least half of the smaller
+// title's significant words.
+function sameEvent(tokensA, tokensB) {
+  const setA = new Set(tokensA);
+  const setB = new Set(tokensB);
+  const shared = [...setA].filter((w) => setB.has(w));
+  if (!shared.length || !shared.some((w) => w.length >= 4)) return false;
+  const minSize = Math.min(setA.size, setB.size);
+  return minSize > 0 && shared.length / minSize >= 0.5;
+}
+
+// Sources ranked by reliability/completeness — official ticketing platforms
+// first, aggregator/blog sites last. Used to pick a winner when the same
+// event is found on multiple sources.
+const SOURCE_PRIORITY = [
+  'eventbrite', 'ticketone', 'dice', 'bandsintown', 'xceed',
+  'grandenapoli', 'napoliateatro', 'iltaccodibacco', 'nomea', 'campaniaevents',
+  'coldiretti',
+];
+
+function sourceRank(source) {
+  const i = SOURCE_PRIORITY.indexOf(source);
+  return i === -1 ? SOURCE_PRIORITY.length : i;
+}
+
+function richness(row) {
+  return [row.image_url, row.ticket_url, row.venue, row.price].filter(Boolean).length;
+}
+
+// Collapses rows that describe the same real-world event across different
+// sources (same date, overlapping distinctive title words), keeping the
+// single best row. Returns both the survivors and the dropped rows, so
+// callers can also clean up any stale copies of the losers already sitting
+// in the DB from a prior run.
+export function resolveDuplicates(rows) {
+  // Only compare titles that fall on the same day — keeps this cheap and
+  // avoids cross-date false positives entirely.
+  const byDate = new Map();
+  rows.forEach((r, i) => {
+    if (!byDate.has(r.date)) byDate.set(r.date, []);
+    byDate.get(r.date).push(i);
+  });
+
+  const tokens = rows.map((r) => titleTokens(r.title));
+
+  // Union-find so matches chain transitively (A~B, B~C ⇒ one group of 3).
+  const parent = rows.map((_, i) => i);
+  function find(x) { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+  function union(a, b) { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; }
+
+  for (const idxs of byDate.values()) {
+    for (let i = 0; i < idxs.length; i++) {
+      for (let j = i + 1; j < idxs.length; j++) {
+        const a = idxs[i], b = idxs[j];
+        if (rows[a].source === rows[b].source) continue; // same-source dupes already handled by dedupe()
+        if (sameEvent(tokens[a], tokens[b])) union(a, b);
+      }
+    }
+  }
+
+  const groups = new Map();
+  rows.forEach((r, i) => {
+    const root = find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(r);
+  });
+
+  const kept = [];
+  const dropped = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) { kept.push(group[0]); continue; }
+    let winner = group[0];
+    for (const r of group.slice(1)) {
+      const better = sourceRank(r.source) < sourceRank(winner.source)
+        || (sourceRank(r.source) === sourceRank(winner.source) && richness(r) > richness(winner));
+      if (better) winner = r;
+    }
+    kept.push(winner);
+    dropped.push(...group.filter((r) => r !== winner));
+  }
+  return { kept, dropped };
 }

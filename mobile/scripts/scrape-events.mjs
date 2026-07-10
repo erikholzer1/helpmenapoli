@@ -21,7 +21,7 @@
 
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
-import { dedupe, todayISO } from './scrapers/shared.mjs';
+import { dedupe, resolveDuplicates, todayISO } from './scrapers/shared.mjs';
 
 // Auto-load mobile/.env for local runs so `node scripts/scrape-events.mjs` just
 // works. CI passes env via Actions secrets, where this file is absent — hence
@@ -34,6 +34,9 @@ import { scrapeTicketone } from './scrapers/ticketone.mjs';
 import { scrapeDice } from './scrapers/dice.mjs';
 import { scrapeColdiretti } from './scrapers/coldiretti.mjs';
 import { scrapeNapoliateatro } from './scrapers/napoliateatro.mjs';
+import { scrapeNomea } from './scrapers/nomea.mjs';
+import { scrapeCampaniaEvents } from './scrapers/campaniaevents.mjs';
+import { scrapeXceed } from './scrapers/xceed.mjs';
 import { scrapeStrikes } from './scrapers/strikes.mjs';
 import { scrapeNapoliMatches } from './scrapers/napoli-matches.mjs';
 
@@ -61,6 +64,10 @@ const SOURCES = [
   ['dice',        scrapeDice],
   ['coldiretti',    () => scrapeColdiretti()],
   ['napoliateatro', () => scrapeNapoliateatro()],
+  ['iltaccodibacco', () => scrapeJsonLd('iltaccodibacco', ['https://iltaccodibacco.it/napoli/'])],
+  ['nomea',          () => scrapeNomea()],
+  ['campaniaevents', () => scrapeCampaniaEvents()],
+  ['xceed',          () => scrapeXceed()],
 ];
 
 async function main() {
@@ -77,7 +84,15 @@ async function main() {
     }
   }
 
-  const rows = dedupe(all);
+  const perSourceDeduped = dedupe(all);
+
+  // Same real-world event listed by multiple sites (e.g. a concert on both
+  // iltaccodibacco and campaniaevents) — keep the best single copy.
+  const { kept: rows, dropped } = resolveDuplicates(perSourceDeduped);
+  if (dropped.length) {
+    console.log(`\nCross-source dedup: dropped ${dropped.length} duplicate(s) also listed elsewhere:`);
+    dropped.forEach((r) => console.log(`  · "${r.title}" (${r.source}, ${r.date})`));
+  }
 
   console.log(`\nTotal: ${rows.length} unique upcoming events across categories:`);
   console.log(rows.reduce((a, r) => ((a[r.category] = (a[r.category] || 0) + 1), a), {}));
@@ -104,6 +119,17 @@ async function main() {
   if (error) {
     console.error('Upsert failed:', error.message);
     process.exit(1);
+  }
+
+  // Remove any stale copies of today's dropped duplicates that a previous run
+  // (or the old per-source-only dedup) may have already inserted.
+  for (const loser of dropped) {
+    const { error: dupErr } = await supabase
+      .from('events')
+      .delete()
+      .eq('source', loser.source)
+      .eq('external_id', loser.external_id);
+    if (dupErr) console.warn(`Duplicate cleanup warning (${loser.source}/${loser.external_id}):`, dupErr.message);
   }
 
   // Prune scraped events that have ended (keep the table to "upcoming"). Admin

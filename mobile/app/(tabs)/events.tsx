@@ -1,8 +1,8 @@
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
-  SectionList, ActivityIndicator, Image, Switch,
+  SectionList, ActivityIndicator, Image, Switch, AppState,
 } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -191,6 +191,19 @@ export default function EventsScreen() {
 
   // WHY refetch on focus: project rule — events must never be older than 24h.
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  // WHY also refetch on app-foreground: if the tab is left open across
+  // midnight (backgrounded overnight, reopened without switching tabs),
+  // useFocusEffect never re-fires, so "Today" would stay frozen on the
+  // stale date from the last render.
+  const appState = useRef(AppState.currentState);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (next) => {
+      if (appState.current.match(/inactive|background/) && next === 'active') load();
+      appState.current = next;
+    });
+    return () => sub.remove();
+  }, [load]);
 
   const toggleCat = (c: EventCategory) => {
     setActiveCats((prev) => {

@@ -253,13 +253,11 @@ export const affiliateExperiences: AffiliateExperience[] = [
     url: 'https://www.getyourguide.com/naples-l162/private-pizza-making-workshop-with-drink-and-appetizers-t765797/?partner_id=GCMOPOO&currency=EUR&travel_agent=1&cmp=share_to_earn',
   },
   {
-    // NOTE: currently the generic GYG share-to-earn link (partner tag still
-    // tracks) — swap in the specific yacht product URL when Erik sends it.
     id: 'aff-capri-yacht',
-    title: 'Yacht Rental to Capri',
-    tagline: 'Private yacht for up to 10 people — cruise the bay in style.',
+    title: 'Luxury Capri Boat Trip',
+    tagline: 'Cruise to Capri in style — private luxury boat from Naples.',
     image: require('@/assets/images/experiences/boat-capri.png'),
-    url: 'https://www.getyourguide.com?partner_id=GCMOPOO&cmp=share_to_earn',
+    url: 'https://www.getyourguide.com/naples-l162/naples-luxury-capri-boat-trip-t655099/?partner_id=GCMOPOO&currency=EUR&travel_agent=1&cmp=share_to_earn',
   },
   {
     id: 'aff-ischia-boat',

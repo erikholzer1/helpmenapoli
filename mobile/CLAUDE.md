@@ -25,7 +25,6 @@ Built by Erik (owner, local expert, American-Italian based in Chiaia).
   hardcode hex or font names in screens.
 
 ## Architecture Rules
-- Never hardcode content that will change (events, lists, experiences)
 - All dynamic content fetches from Supabase
 - Use existing component patterns before creating new ones
 - Always add loading states and error states to data-fetching screens
@@ -48,9 +47,10 @@ Built by Erik (owner, local expert, American-Italian based in Chiaia).
 - Events table columns (snake_case in DB, camelCase in `lib/events.ts`):
   `date, end_date, category, title, time, venue, area, price, free,
   image_url, ticket_url, source, external_id, description`
-- Categories (the 6 the scraper maps into — anything that doesn't fit is dropped):
-  `music` (music/nightlife), `theater`, `food` (food/drink), `culture`,
-  `wellness`, `business` (business/networking).
+- Categories (the scraper maps into these — anything that doesn't fit is
+  dropped): `music` (music/nightlife), `theater`, `food` (food/drink),
+  `culture`, `wellness`, `business` (business/networking), `sport` (Napoli
+  home games only — see Sport below).
 - Sort: ascending by date, then time.
 - Filters: by category (chips), by date range (Today / Weekend / This week /
   All), and by free (prominent central toggle).
@@ -58,31 +58,63 @@ Built by Erik (owner, local expert, American-Italian based in Chiaia).
   sources on dedupe — the scraper never overwrites an admin row.
 - Scraping: `scripts/scrape-events.mjs` orchestrates per-source adapters in
   `scripts/scrapers/` (each self-skips when unconfigured; all funnel through
-  `shared.makeRow` for categorization/dedupe). Only events that clearly fit one
-  of the 6 categories are kept. Flags: `--dry`, `--only=a,b`. Runs every 24h via
+  `shared.makeRow` for categorization/per-source dedupe, then
+  `shared.resolveDuplicates` for CROSS-source dedup — the same real event often
+  gets listed under very different titles on different sites, so this matches
+  by same-date + shared distinctive title words, not exact string equality).
+  Flags: `--dry`, `--only=a,b`. Runs every 24h via
   `.github/workflows/scrape-events.yml`.
-  - `grandenapoli` — schema.org JSON-LD over plain fetch. WORKS (~30 events).
-  - `eventbrite` — needs `EVENTBRITE_TOKEN`. Public REST search was removed in
-    2020, so this calls the internal `/v3/destination/search/` endpoint (the one
-    eventbrite.it itself uses) for Naples, maps Eventbrite category tags → our 6
-    buckets, and filters to Naples-area venues. WORKS (~104 events).
-    `EVENTBRITE_ORG_IDS` optionally adds events from orgs Erik owns.
-  - `bandsintown` — official API, ARTIST-scoped (no public city endpoint),
-    filtered to Naples area. Needs `BANDSINTOWN_APP_ID` + `BANDSINTOWN_ARTISTS`.
-  - `ticketone`, `dice` — Playwright + stealth (`playwright-extra` +
-    `puppeteer-extra-plugin-stealth`) driving REAL Chrome
-    (`npx playwright install chrome`). Both sites have bot walls (TicketOne=
-    Akamai, Dice=Cloudflare) that stealth+real-Chrome gets past. WORKS:
-    TicketOne ~18 (JSON-LD), Dice ~30 (Next.js `__NEXT_DATA__`). If they start
-    returning 0 again, the bot wall changed — bundled Chromium won't do, real
-    Chrome is required.
+  - Always-on: `grandenapoli`, `iltaccodibacco` (both via the generic
+    `scrapeJsonLd` adapter — reuse it for any new site with schema.org Event
+    markup before writing a bespoke scraper), `coldiretti`, `napoliateatro`,
+    `nomea`, `campaniaevents`, `xceed`.
+  - Needs env vars: `eventbrite` (`EVENTBRITE_TOKEN`, optional
+    `EVENTBRITE_ORG_IDS`), `bandsintown` (`BANDSINTOWN_APP_ID`, artist-scoped
+    — no public city endpoint).
+  - Playwright + stealth, driving REAL Chrome (bundled Chromium gets blocked
+    by their bot walls): `ticketone`, `dice`.
+  - New source checklist: try `scrapeJsonLd` against the listing page first;
+    if 0 events, check for a WordPress REST API (`/wp-json/wp/v2/types` — look
+    for a custom post type or a calendar plugin like The Events Calendar,
+    `/wp-json/tribe/events/v1/events`) before writing HTML-scraping logic.
+
+## Sport (Napoli home games)
+- `scripts/scrapers/napoli-matches.mjs` — TheSportsDB (free, no key), upserts
+  home fixtures into `events` as `category: 'sport'`.
+- `hooks/useGameDayNotifications.ts` — schedules a 09:00 local notification on
+  each game day warning about Tangenziale/Fuorigrotta traffic from 4h before
+  kickoff. Wired into root `_layout.tsx`.
+
+## Strikes (scioperi)
+- Separate Supabase table (`strikes`, not `events`) — `scripts/scrapers/strikes.mjs`
+  pulls the official MIT RSS feed, filters to national + Campania/Naples
+  transport-relevant sectors. Displayed live on the Getting Around screen.
+
+## Freemium / Paywall
+- `hooks/usePremium.ts` (AsyncStorage-backed) + `components/PaywallSheet.tsx`.
+- Free tier: weekend-only What's On, 4 curated Top 10 lists (pizzerias,
+  aperitivo, artisan, museums), Basics + Pronunciation language sections.
+  Everything else requires unlock. Never change what's free/gated without
+  asking Erik first — this is a monetization decision, not a code decision.
 
 ## Experiences Section — Special Rules
-- These are Erik's personal offerings — never auto-populate.
-- Schema: `{ id, title, description, duration, category, booking_url,
-  image_url, featured }`
-- Booking goes to WhatsApp (`+39 333 148 9859` → `wa.me/393331489859`) via
-  `components/ContactSheet.tsx`.
+- These are Erik's personal offerings — never auto-populate, edit
+  `constants/experiences.ts` directly.
+- Each experience has a `BookingConfig`: `rsvp` (fixed public dates only),
+  `inquiry` (questionnaire only), or `hybrid` (both — public dates plus a
+  private-request form). `components/BookingSheet.tsx` renders whichever flow
+  applies. A `FixedDate` with `whatsappGroup` set skips the form entirely and
+  opens that WhatsApp group link directly (used for events with a fixed
+  group, e.g. the Capri boat day).
+- All WhatsApp sends go through `sendWhatsApp()` / `sendEmail()` in
+  `components/ContactSheet.tsx` — the single WhatsApp number
+  (`+39 333 148 9589`) lives ONLY there. Never hardcode the number elsewhere;
+  import and call these helpers (used by `BookingSheet.tsx` and
+  `DriverSheet.tsx` too). Message format: greeting line, then `•`-bulleted
+  fields, then a one-line next-step sign-off — keep new message builders
+  consistent with this.
+- `components/DriverSheet.tsx` (opened from the Getting Around screen) uses
+  the same send helpers for private-driver requests.
 
 ## Working Style
 - When building a feature, flag related components that need updating.

@@ -38,17 +38,19 @@ export function useStrikes() {
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
-    supabase
-      .from('strikes')
-      .select('*')
-      .gte('start_date', today)
-      .order('start_date', { ascending: true })
-      .limit(10)
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('strikes')
+          .select('*')
+          .gte('start_date', today)
+          .order('start_date', { ascending: true })
+          .limit(10);
         setStrikes((data as Strike[]) ?? []);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    })();
   }, []);
 
   return { strikes, loading };

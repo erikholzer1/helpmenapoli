@@ -216,3 +216,49 @@ export const experiences: Experience[] = [
 ];
 
 export const WHATSAPP_COMMUNITY = 'https://chat.whatsapp.com/EmxgA1r5wha5nWdiMjJzyR';
+
+// ─── Partner (affiliate) experiences ─────────────────────────────────────────
+// GetYourGuide tours with Erik's partner tag. These are NOT led by Erik — the
+// app shows them in a separate section with a clear disclosure, and tapping
+// one opens GetYourGuide directly (no BookingSheet, no WhatsApp).
+// NOTE: pizza-making and ischia-boat currently point at the GYG homepage
+// (partner tag still tracks); swap in specific product URLs when Erik sends them.
+
+export type AffiliateExperience = {
+  id: string;
+  title: string;
+  tagline: string;
+  image: ImageSourcePropType;
+  url: string;
+};
+
+export const affiliateExperiences: AffiliateExperience[] = [
+  {
+    id: 'aff-pompeii',
+    title: 'Pompeii VIP: Skip the Line',
+    tagline: 'Tour the ruins with a real archaeologist — skip-the-line entry included.',
+    image: require('@/assets/images/top10/daytrips.webp'),
+    url: 'https://www.getyourguide.com/pompei-campania-l156880/pompeii-vip-skip-the-line-with-your-archaeologist-t301893/?partner_id=GCMOPOO&currency=EUR&travel_agent=1&cmp=share_to_earn',
+  },
+  {
+    id: 'aff-historic-center',
+    title: 'Historic Center: Gothic & Baroque',
+    tagline: 'Naples old town walking tour with Veiled Christ entry tickets.',
+    image: require('@/assets/images/top10/museums.jpg'),
+    url: 'https://www.getyourguide.com/naples-l162/naples-historic-center-tour-veiled-christ-entry-tickets-t486218/?partner_id=GCMOPOO&currency=EUR&travel_agent=1&cmp=share_to_earn',
+  },
+  {
+    id: 'aff-pizza',
+    title: 'Pizza-Making Class',
+    tagline: 'Learn to stretch, top and fire a true Neapolitan pizza.',
+    image: require('@/assets/images/top10/pizzerias.webp'),
+    url: 'https://www.getyourguide.com?partner_id=GCMOPOO&cmp=share_to_earn',
+  },
+  {
+    id: 'aff-ischia-boat',
+    title: 'Ischia Boat Tour',
+    tagline: 'A day on the water around the green island.',
+    image: require('@/assets/images/experiences/boat.jpeg'),
+    url: 'https://www.getyourguide.com?partner_id=GCMOPOO&cmp=share_to_earn',
+  },
+];

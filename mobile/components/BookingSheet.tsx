@@ -186,9 +186,9 @@ export default function BookingSheet({ exp, onClose }: Props) {
   // For inquiry-only: go straight to form
   const effectiveMode: SheetMode = isInquiry ? 'private' : mode;
 
-  const privateFields: BookingField[] = isInquiry
+  const privateFields: BookingField[] = booking.type === 'inquiry'
     ? booking.fields
-    : booking.type !== 'inquiry' && 'privateFields' in booking
+    : 'privateFields' in booking
       ? (booking.privateFields ?? [])
       : [];
 
@@ -229,7 +229,7 @@ export default function BookingSheet({ exp, onClose }: Props) {
             {hasFixedDates && (
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>Upcoming public dates</Text>
-                {booking.type !== 'inquiry' && booking.fixedDates.map((d) => (
+                {'fixedDates' in booking && booking.fixedDates.map((d) => (
                   <TouchableOpacity
                     key={d.iso}
                     style={styles.dateRow}

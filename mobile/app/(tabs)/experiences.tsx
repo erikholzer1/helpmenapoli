@@ -6,11 +6,41 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Shadow, Radius } from '@/constants/Colors';
-import { experiences, type Experience, WHATSAPP_COMMUNITY } from '@/constants/experiences';
+import {
+  experiences, affiliateExperiences,
+  type Experience, type AffiliateExperience, WHATSAPP_COMMUNITY,
+} from '@/constants/experiences';
 import ContactSheet from '@/components/ContactSheet';
 import BookingSheet from '@/components/BookingSheet';
 
 const SCRIM = ['rgba(26,20,16,0)', 'rgba(26,20,16,0.15)', 'rgba(26,20,16,0.88)'] as const;
+
+function AffiliateCard({ exp }: { exp: AffiliateExperience }) {
+  return (
+    <TouchableOpacity
+      style={[styles.card, styles.affiliateCard]}
+      activeOpacity={0.9}
+      onPress={() => Linking.openURL(exp.url).catch(() => {})}
+    >
+      <Image source={exp.image} style={styles.cardImage} resizeMode="cover" />
+      <LinearGradient colors={SCRIM} locations={[0, 0.45, 1]} style={styles.cardScrim}>
+        <View style={styles.partnerBadge}>
+          <Text style={styles.partnerBadgeText}>PARTNER TOUR</Text>
+        </View>
+        <View style={styles.cardBottom}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{exp.title}</Text>
+            <Text style={styles.cardTagline}>{exp.tagline}</Text>
+          </View>
+          <View style={styles.infoPill}>
+            <Text style={styles.infoPillText}>Book</Text>
+            <Ionicons name="open-outline" size={13} color={Colors.dark} />
+          </View>
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+}
 
 function ExperienceCard({ exp, onInfo }: { exp: Experience; onInfo: () => void }) {
   return (
@@ -47,6 +77,21 @@ export default function ExperiencesScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {experiences.map((exp) => (
           <ExperienceCard key={exp.id} exp={exp} onInfo={() => setBookingExp(exp)} />
+        ))}
+
+        {/* Partner tours — affiliate, clearly separated from Erik's own */}
+        {affiliateExperiences.length > 0 && (
+          <View style={styles.partnerSection}>
+            <Text style={styles.partnerEyebrow}>MORE TO EXPLORE</Text>
+            <Text style={styles.partnerTitle}>Partner Tours</Text>
+            <Text style={styles.partnerDisclosure}>
+              Run by trusted operators on GetYourGuide — not led by Erik. Booking through
+              these links supports the app at no extra cost to you.
+            </Text>
+          </View>
+        )}
+        {affiliateExperiences.map((exp) => (
+          <AffiliateCard key={exp.id} exp={exp} />
         ))}
 
         {/* WhatsApp community */}
@@ -118,6 +163,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13, paddingVertical: 8, ...Shadow.sm,
   },
   infoPillText: { fontFamily: 'DMSans-Medium', fontSize: 12.5, color: Colors.dark },
+
+  affiliateCard: { aspectRatio: 1.55 },
+  partnerBadge: {
+    position: 'absolute', top: 14, left: 14,
+    backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: Radius.pill,
+    paddingHorizontal: 10, paddingVertical: 5,
+  },
+  partnerBadgeText: { fontFamily: 'DMSans-Medium', fontSize: 10, letterSpacing: 1.2, color: Colors.dark },
+  partnerSection: { width: '100%', maxWidth: 460, marginTop: 18, marginBottom: 12 },
+  partnerEyebrow: { fontFamily: 'DMSans-Medium', fontSize: 11, letterSpacing: 2, color: Colors.goldDim, marginBottom: 3 },
+  partnerTitle: { fontFamily: 'PlayfairDisplay-Bold', fontSize: 22, color: Colors.dark, marginBottom: 6 },
+  partnerDisclosure: { fontFamily: 'DMSans-Regular', fontSize: 12, color: Colors.mid, lineHeight: 17 },
 
   communityCard: {
     width: '100%', maxWidth: 460,

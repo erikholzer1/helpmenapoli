@@ -2,8 +2,28 @@
 
 ## What This App Is
 React Native / Expo app. "Your guide to living and loving Naples."
-Target users: visitors, expats, and relocators in Naples, Italy.
 Built by Erik (owner, local expert, American-Italian based in Chiaia).
+
+## Product Charter (July 2026 — check features against this)
+- **Problem:** Naples is disorienting (language, culture, traffic, its own
+  rules even by Italian standards). The app closes the *confidence gap* —
+  a trusted local layer that turns anxiety into exploration. Events,
+  transport, and language are means; *feeling at home* is the product.
+- **Audience priority:** expats/relocators FIRST; locals and tourists equal
+  second. When a tradeoff arises, the person living in Naples wins. Depth
+  (strike alerts, funicular closures, game-day traffic) beats breadth
+  (generic top-attractions content).
+- **Business model:** the app is the funnel; Erik's experiences are the
+  revenue. Targets: 1,000 downloads; €3,000/month from experiences. Judge
+  features by "does this drive bookings or retention?" — the $10 unlock is
+  margin, not the mission.
+- **Hard boundaries:**
+  - No service-directory sprawl (lawyers, real estate, visas). Scope is
+    live/explore/enjoy, not administrate.
+  - No features that create recurring manual work for Erik —
+    automation-first (scrapers, feeds, scheduled notifications).
+  - Third-party experiences / affiliate revenue only if passive
+    (self-serve or API-driven; never manual provider outreach).
 
 ## Sections (current)
 - Home (dashboard with cards)

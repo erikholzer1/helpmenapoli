@@ -221,8 +221,6 @@ export const WHATSAPP_COMMUNITY = 'https://chat.whatsapp.com/EmxgA1r5wha5nWdiMjJ
 // GetYourGuide tours with Erik's partner tag. These are NOT led by Erik — the
 // app shows them in a separate section with a clear disclosure, and tapping
 // one opens GetYourGuide directly (no BookingSheet, no WhatsApp).
-// NOTE: pizza-making and ischia-boat currently point at the GYG homepage
-// (partner tag still tracks); swap in specific product URLs when Erik sends them.
 
 export type AffiliateExperience = {
   id: string;
@@ -249,16 +247,16 @@ export const affiliateExperiences: AffiliateExperience[] = [
   },
   {
     id: 'aff-pizza',
-    title: 'Pizza-Making Class',
-    tagline: 'Learn to stretch, top and fire a true Neapolitan pizza.',
+    title: 'Pizza-Making Workshop',
+    tagline: 'Private class with drinks & appetizers — stretch, top and fire a true Neapolitan pizza.',
     image: require('@/assets/images/top10/pizzerias.webp'),
-    url: 'https://www.getyourguide.com?partner_id=GCMOPOO&cmp=share_to_earn',
+    url: 'https://www.getyourguide.com/naples-l162/private-pizza-making-workshop-with-drink-and-appetizers-t765797/?partner_id=GCMOPOO&currency=EUR&travel_agent=1&cmp=share_to_earn',
   },
   {
     id: 'aff-ischia-boat',
     title: 'Ischia Boat Tour',
-    tagline: 'A day on the water around the green island.',
+    tagline: 'Circle the green island with a local lunch and swimming stops.',
     image: require('@/assets/images/experiences/boat.jpeg'),
-    url: 'https://www.getyourguide.com?partner_id=GCMOPOO&cmp=share_to_earn',
+    url: 'https://www.getyourguide.com/forio-l164626/forio-ischia-island-boat-tour-with-local-lunch-and-swimming-t426615/?partner_id=GCMOPOO&currency=EUR&travel_agent=1&cmp=share_to_earn',
   },
 ];

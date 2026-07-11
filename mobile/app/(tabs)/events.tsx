@@ -27,6 +27,16 @@ function startOfToday(): Date {
   return d;
 }
 
+// Local-timezone YYYY-MM-DD. NEVER use toISOString() for date keys: local
+// midnight converted to UTC lands on the PREVIOUS day (Naples is UTC+1/+2),
+// which made every ongoing event group under yesterday's header.
+function toLocalISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // An event "occupies" every day from its start date through its end date.
 function eventStart(e: NaplesEvent): Date { return parseDate(e.date); }
 function eventEnd(e: NaplesEvent): Date { return parseDate(e.endDate ?? e.date); }
@@ -100,7 +110,7 @@ function buildSections(events: NaplesEvent[]): Section[] {
   for (const e of events) {
     // Group under today if the event is already running, else its start date.
     const today = startOfToday();
-    const key = eventStart(e) < today ? today.toISOString().split('T')[0] : e.date;
+    const key = eventStart(e) < today ? toLocalISO(today) : e.date;
     (byDay[key] ??= []).push(e);
   }
   return Object.keys(byDay)

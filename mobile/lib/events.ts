@@ -80,6 +80,16 @@ export type FetchEventsResult =
   | { ok: true; events: NaplesEvent[] }
   | { ok: false; error: string };
 
+// Today's date in the DEVICE's local timezone as YYYY-MM-DD. Never use
+// toISOString() for this: it converts to UTC, which is yesterday between
+// local midnight and ~2am in Naples (UTC+1/+2) — events showed a day behind.
+export function localTodayISO(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
 // Fetches upcoming events: today onward, sorted ascending by date (then time).
 // WHY end_date filter: a multi-day event should keep showing until it ends,
 // so we include rows whose end_date is today-or-later (falling back to date).
@@ -91,7 +101,7 @@ export async function fetchUpcomingEvents(): Promise<FetchEventsResult> {
     };
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localTodayISO();
 
   const { data, error } = await supabase
     .from('events')

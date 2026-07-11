@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { localTodayISO } from '@/lib/events';
 
 export type Strike = {
   id: number;
@@ -37,7 +38,7 @@ export function useStrikes() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localTodayISO();
     (async () => {
       try {
         const { data } = await supabase

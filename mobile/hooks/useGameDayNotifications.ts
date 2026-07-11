@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
+import { localTodayISO } from '@/lib/events';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -24,7 +25,7 @@ async function scheduleGameDayNotifications() {
   if (!granted) return;
 
   // Fetch upcoming Napoli home games (next 60 days).
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localTodayISO();
   const { data: games } = await supabase
     .from('events')
     .select('title, date, time')

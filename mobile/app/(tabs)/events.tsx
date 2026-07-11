@@ -188,7 +188,7 @@ export default function EventsScreen() {
   const { isPremium } = usePremium();
   const [paywallOpen, setPaywallOpen] = useState(false);
   const [state, setState] = useState<LoadState>({ status: 'loading' });
-  const [range, setRange] = useState<DateRange>('weekend');
+  const [range, setRange] = useState<DateRange>('today');
   const [activeCats, setActiveCats] = useState<Set<EventCategory>>(new Set());
   const [freeOnly, setFreeOnly] = useState(false);
 
@@ -228,14 +228,14 @@ export default function EventsScreen() {
       {!isPremium && (
         <TouchableOpacity style={styles.upgradeBanner} onPress={() => setPaywallOpen(true)} activeOpacity={0.85}>
           <Ionicons name="star" size={14} color={Colors.gold} />
-          <Text style={styles.upgradeBannerText}>Free: weekend events only — unlock all</Text>
+          <Text style={styles.upgradeBannerText}>Free: today's events only — unlock all</Text>
           <Ionicons name="chevron-forward" size={13} color={Colors.gold} />
         </TouchableOpacity>
       )}
       {/* Date range — segmented */}
       <View style={styles.segment}>
         {DATE_RANGES.map((r) => {
-          const locked = !isPremium && (r.id === 'today' || r.id === 'week' || r.id === 'all');
+          const locked = !isPremium && r.id !== 'today';
           const active = range === r.id;
           return (
             <TouchableOpacity
@@ -327,7 +327,7 @@ export default function EventsScreen() {
     );
   }
 
-  const effectiveRange: DateRange = isPremium ? range : 'weekend';
+  const effectiveRange: DateRange = isPremium ? range : 'today';
   const filtered = state.events.filter((e) =>
     inRange(e, effectiveRange) &&
     (activeCats.size === 0 || activeCats.has(e.category)) &&

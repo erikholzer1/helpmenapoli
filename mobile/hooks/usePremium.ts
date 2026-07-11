@@ -3,6 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const KEY = 'helpmenapoli.premium';
 
+// TEMPORARY KILL-SWITCH: while the app is in the tweaking phase, everything
+// is unlocked for everyone. Flip to true before App Store launch to
+// re-enable the paywall (free tier = today's events, 4 free lists, basics).
+const PAYWALL_ENABLED = false;
+
 let listeners: Array<(v: boolean) => void> = [];
 let cached: boolean | null = null;
 
@@ -29,5 +34,5 @@ export function usePremium() {
     listeners.forEach((l) => l(true));
   }, []);
 
-  return { isPremium, unlock };
+  return { isPremium: PAYWALL_ENABLED ? isPremium : true, unlock };
 }

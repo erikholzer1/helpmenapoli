@@ -19,9 +19,11 @@ Ground rules for anything event-related:
    `supabase/migrations/` and update the `NaplesEvent` type + `rowToEvent`
    mapper in `lib/events.ts` together.
 
-3. **Categories are the 6 buckets only:** `music, theater, food, culture,
-   wellness, business`. Defined with labels/icons/colors in `CATEGORY_META`.
-   Don't invent new categories — if something doesn't fit, it's dropped.
+3. **Categories are the 7 buckets only:** `music, theater, food, culture,
+   wellness, business, sport` (sport = Napoli home games only, fed by
+   `scripts/scrapers/napoli-matches.mjs`). Defined with labels/icons/colors in
+   `CATEGORY_META`. Don't invent new categories — if something doesn't fit,
+   it's dropped.
 
 4. **Freshness.** Events must never be older than 24h. The screen refetches on
    focus (`useFocusEffect`); the scraper refreshes the table every 24h.

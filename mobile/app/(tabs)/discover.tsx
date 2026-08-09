@@ -1,7 +1,8 @@
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Linking,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, Image, Linking, Alert,
 } from 'react-native';
 import { useState } from 'react';
+import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +13,8 @@ import { topImages } from '@/constants/topImages';
 import Map from '@/components/Map';
 import { usePremium } from '@/hooks/usePremium';
 import PaywallSheet from '@/components/PaywallSheet';
+import { EDIT_MODE } from '@/constants/editMode';
+import { useSpotOrder } from '@/hooks/useSpotOrder';
 
 const FREE_LIST_IDS = new Set(['pizzerias', 'aperitivo', 'artisan', 'museums']);
 
@@ -49,11 +52,15 @@ function CategoryCard({ list, onPress, locked }: { list: DiscoverList; onPress: 
   );
 }
 
-function SpotRow({ spot }: { spot: Spot }) {
+function SpotRow({ spot, displayRank, edit }: {
+  spot: Spot;
+  displayRank: number;
+  edit?: { onUp: () => void; onDown: () => void; isFirst: boolean; isLast: boolean };
+}) {
   return (
     <TouchableOpacity style={styles.spot} onPress={() => openInMaps(spot)} activeOpacity={0.7}>
-      <View style={[styles.rank, spot.rank <= 3 && styles.rankTop]}>
-        <Text style={[styles.rankText, spot.rank <= 3 && styles.rankTextTop]}>{spot.rank}</Text>
+      <View style={[styles.rank, displayRank <= 3 && styles.rankTop]}>
+        <Text style={[styles.rankText, displayRank <= 3 && styles.rankTextTop]}>{displayRank}</Text>
       </View>
       <View style={styles.spotBody}>
         <View style={styles.spotNameRow}>
@@ -68,14 +75,43 @@ function SpotRow({ spot }: { spot: Spot }) {
         ) : null}
         {spot.description ? <Text style={styles.spotDesc}>{spot.description}</Text> : null}
       </View>
-      <Ionicons name="map-outline" size={16} color={Colors.gold} />
+      {edit ? (
+        <View style={styles.moveCol}>
+          <TouchableOpacity
+            style={[styles.moveBtn, edit.isFirst && styles.moveBtnOff]}
+            onPress={edit.onUp}
+            disabled={edit.isFirst}
+            hitSlop={6}
+          >
+            <Ionicons name="chevron-up" size={16} color={edit.isFirst ? Colors.faint : Colors.dark} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.moveBtn, edit.isLast && styles.moveBtnOff]}
+            onPress={edit.onDown}
+            disabled={edit.isLast}
+            hitSlop={6}
+          >
+            <Ionicons name="chevron-down" size={16} color={edit.isLast ? Colors.faint : Colors.dark} />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Ionicons name="map-outline" size={16} color={Colors.gold} />
+      )}
     </TouchableOpacity>
   );
 }
 
 function ListDetail({ list, onBack }: { list: DiscoverList; onBack: () => void }) {
-  const points = list.items.map((i) => ({ name: i.name, lat: i.lat, lng: i.lng }));
+  const { ordered, move, reset } = useSpotOrder(list.id, list.items);
+  const items = EDIT_MODE ? ordered : list.items;
+  const points = items.map((i) => ({ name: i.name, lat: i.lat, lng: i.lng }));
   const photo = topImages[list.id];
+
+  const copyOrder = async () => {
+    const payload = JSON.stringify({ list: list.id, order: items.map((s) => s.name) }, null, 2);
+    await Clipboard.setStringAsync(payload);
+    Alert.alert('Order copied', 'Paste it to Claude to bake it into discover.ts permanently.');
+  };
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.detailHeader}>
@@ -98,7 +134,36 @@ function ListDetail({ list, onBack }: { list: DiscoverList; onBack: () => void }
             <Map points={points} height={200} />
             <Text style={styles.mapHint}>Neighbourhoods & pins are approximate — tap a spot for its exact Maps location.</Text>
             <View style={{ height: 8 }} />
-            {list.items.map((s) => <SpotRow key={`${s.rank}-${s.name}`} spot={s} />)}
+
+            {EDIT_MODE && (
+              <View style={styles.editBar}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.editBarTitle}>Edit mode</Text>
+                  <Text style={styles.editBarSub}>Reorder with ↑↓, then copy the order.</Text>
+                </View>
+                <TouchableOpacity style={styles.editBtn} onPress={copyOrder}>
+                  <Ionicons name="copy-outline" size={13} color={Colors.dark} />
+                  <Text style={styles.editBtnText}>Copy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.editBtn, styles.editBtnGhost]} onPress={reset}>
+                  <Text style={styles.editBtnText}>Reset</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {items.map((s, i) => (
+              <SpotRow
+                key={s.name}
+                spot={s}
+                displayRank={i + 1}
+                edit={EDIT_MODE ? {
+                  onUp: () => move(i, -1),
+                  onDown: () => move(i, 1),
+                  isFirst: i === 0,
+                  isLast: i === items.length - 1,
+                } : undefined}
+              />
+            ))}
             {list.note ? (
               <View style={styles.noteCard}>
                 <Ionicons name="bulb-outline" size={15} color={Colors.gold} />
@@ -270,6 +335,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: Colors.white,
     borderRadius: Radius.md, padding: 13, marginBottom: 10, ...Shadow.sm,
   },
+  // Dev-only edit mode (constants/editMode.ts) — remove with EDIT_MODE.
+  editBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#FFF6D9', borderRadius: Radius.md, padding: 12, marginBottom: 10,
+    borderWidth: 1, borderColor: Colors.gold,
+  },
+  editBarTitle: { fontFamily: 'DMSans-Medium', fontSize: 13, color: Colors.dark },
+  editBarSub: { fontFamily: 'DMSans-Regular', fontSize: 11, color: Colors.mid, marginTop: 1 },
+  editBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: Colors.gold, borderRadius: Radius.pill, paddingHorizontal: 12, paddingVertical: 7,
+  },
+  editBtnGhost: { backgroundColor: 'transparent', borderWidth: 1, borderColor: Colors.gold },
+  editBtnText: { fontFamily: 'DMSans-Medium', fontSize: 12, color: Colors.dark },
+  moveCol: { gap: 4 },
+  moveBtn: {
+    width: 30, height: 26, borderRadius: 7, backgroundColor: Colors.light,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  moveBtnOff: { opacity: 0.35 },
+
   rank: { width: 28, height: 28, borderRadius: 8, backgroundColor: Colors.light, alignItems: 'center', justifyContent: 'center' },
   rankTop: { backgroundColor: Colors.gold },
   rankText: { fontFamily: 'DMSans-Medium', fontSize: 13, color: Colors.mid },

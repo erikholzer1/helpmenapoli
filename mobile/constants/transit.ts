@@ -140,10 +140,13 @@ export const transitSections: TransitSection[] = [
       },
       {
         name: 'Line 2',
+        tag: '2 STOPS CLOSED',
         route: 'Gianturco ↔ Pozzuoli, via Garibaldi, Cavour, Montesanto, Amedeo, Mergellina & Campi Flegrei.',
         hours: 'Daily ~5:00–23:00',
         freq: 'Every ~8–10 min on weekdays',
-        note: 'Run by Trenitalia (it\'s regional rail used as a metro). Handy west toward Mergellina and the Phlegraean coast.',
+        // RFI station-upgrade works, 20 Aug – 4 Sep 2026 (PNRR-funded).
+        // EXPIRES 4 SEP 2026 — delete this note + the tag after that date.
+        note: 'Piazza Amedeo and Montesanto are CLOSED until 4 September for station works — trains pass through without stopping. For Amedeo use Mergellina or the Chiaia funicular; for Montesanto use Cavour/Museo or the Cumana. Run by Trenitalia (it\'s regional rail used as a metro). Handy west toward Mergellina and the Phlegraean coast.',
         url: 'https://www.trenitalia.com/it/regionale/campania/metro-napoli.html',
         mapImage: require('@/assets/images/lines/line2.jpeg'),
       },

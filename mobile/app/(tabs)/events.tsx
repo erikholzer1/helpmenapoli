@@ -106,16 +106,30 @@ type Section = { title: string; isoDate: string; data: NaplesEvent[] };
 
 // Groups filtered events by their start date (each event once), ascending.
 function buildSections(events: NaplesEvent[]): Section[] {
+  const today = startOfToday();
   const byDay: Record<string, NaplesEvent[]> = {};
   for (const e of events) {
     // Group under today if the event is already running, else its start date.
-    const today = startOfToday();
     const key = eventStart(e) < today ? toLocalISO(today) : e.date;
     (byDay[key] ??= []).push(e);
   }
   return Object.keys(byDay)
     .sort()
-    .map((iso) => ({ title: formatDateHeader(iso), isoDate: iso, data: byDay[iso] }));
+    .map((iso) => ({
+      title: formatDateHeader(iso),
+      isoDate: iso,
+      // Within a day, things STARTING that day come first; long-running
+      // exhibitions that merely span it go last. Without this, ~14 museum
+      // shows that opened back in April sorted above everything actually
+      // happening today (they sort by start date), burying today's real
+      // events far down the list.
+      data: byDay[iso].slice().sort((a, b) => {
+        const aOngoing = eventStart(a) < today ? 1 : 0;
+        const bOngoing = eventStart(b) < today ? 1 : 0;
+        if (aOngoing !== bOngoing) return aOngoing - bOngoing;
+        return (a.time ?? '99:99').localeCompare(b.time ?? '99:99');
+      }),
+    }));
 }
 
 // ─── components ───────────────────────────────────────────────────────────────
@@ -143,6 +157,11 @@ function EventCard({ ev }: { ev: NaplesEvent }) {
           <CategoryBadge category={ev.category} />
           {ev.free && (
             <View style={styles.freeBadge}><Text style={styles.freeText}>FREE</Text></View>
+          )}
+          {/* An exhibition that opened months ago still shows under Today —
+              say so, otherwise it reads as if it starts today. */}
+          {eventStart(ev) < startOfToday() && (
+            <View style={styles.ongoingBadge}><Text style={styles.ongoingText}>ONGOING</Text></View>
           )}
         </View>
         <Text style={styles.cardTitle}>{ev.title}</Text>
@@ -452,6 +471,8 @@ const styles = StyleSheet.create({
   catLabel: { fontFamily: 'DMSans-Medium', fontSize: 10 },
 
   freeBadge: { backgroundColor: '#3E8E6B1A', borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
+  ongoingBadge: { backgroundColor: Colors.surfaceTint, borderRadius: Radius.pill, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: Colors.cardBorder },
+  ongoingText: { fontFamily: 'DMSans-Medium', fontSize: 9, letterSpacing: 0.5, color: Colors.mid },
   freeText: { fontFamily: 'DMSans-Medium', fontSize: 10, color: '#3E8E6B' },
 
   // ── states ──

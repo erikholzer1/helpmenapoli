@@ -325,7 +325,7 @@ function sameEvent(tokensA, tokensB, freq) {
 const SOURCE_PRIORITY = [
   'eventbrite', 'ticketone', 'dice', 'bandsintown', 'xceed',
   'grandenapoli', 'napoliateatro', 'iltaccodibacco', 'nomea', 'campaniaevents',
-  'sagre', 'coldiretti',
+  'sagre', 'napolidavivere', 'coldiretti',
 ];
 
 function sourceRank(source) {

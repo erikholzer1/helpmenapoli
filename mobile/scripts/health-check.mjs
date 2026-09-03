@@ -28,6 +28,7 @@ import { scrapeNomea } from './scrapers/nomea.mjs';
 import { scrapeCampaniaEvents } from './scrapers/campaniaevents.mjs';
 import { scrapeXceed } from './scrapers/xceed.mjs';
 import { scrapeSagre } from './scrapers/sagre.mjs';
+import { scrapeNapolidavivere } from './scrapers/napolidavivere.mjs';
 
 // Minimum rows a source should return when healthy. Set below the observed
 // norm so normal week-to-week variation doesn't cry wolf; the point is to
@@ -44,6 +45,7 @@ const SOURCES = [
   ['campaniaevents', 10, () => scrapeCampaniaEvents()],
   ['xceed',           0, () => scrapeXceed()],       // nightlife, sparse midweek
   ['sagre',           3, () => scrapeSagre()],
+  ['napolidavivere', 10, () => scrapeNapolidavivere()],
 ];
 
 const problems = [];

@@ -53,6 +53,21 @@ export function categorize(title = '', description = '', types = []) {
   return null; // doesn't clearly fit → drop
 }
 
+// Folds typographic variants to a canonical form so that strings which differ
+// only cosmetically hash identically: curly quotes/apostrophes → ASCII, dash
+// variants → "-", accents stripped, case and whitespace flattened.
+export function hashKey(s) {
+  return (s || '')
+    .replace(/[‘’‚‛′´`]/g, "'")
+    .replace(/[“”„‟″]/g, '"')
+    .replace(/[‐-―−]/g, '-')
+    .replace(/…/g, '...')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // HTML from listing sites is riddled with tags + entities. Decode common
 // entities FIRST (markup is often entity-encoded, e.g. "&lt;p&gt;"), THEN strip
 // the now-real tags, THEN collapse whitespace.
@@ -123,9 +138,14 @@ export function makeRow({
 
   const free = Boolean(isFree) || /\b(free|gratis|gratuito|ingresso libero)\b/i.test(priceText || '');
 
+  // WHY normalize for the hash: sites emit the same string with different
+  // typography run to run — one page had "Palazzo dell'Orologio" with a curly
+  // apostrophe and "Palazzo dell'Orologio" with a straight one, which hashed
+  // to two different external_ids and inserted the SAME event twice. Only the
+  // hash input is normalized; display text keeps its real punctuation.
   const external_id = crypto
     .createHash('sha1')
-    .update(`${source}|${cleanTitle}|${date}|${cleanVenue ?? ''}`)
+    .update(hashKey(`${source}|${cleanTitle}|${date}|${cleanVenue ?? ''}`))
     .digest('hex');
 
   return {
@@ -206,6 +226,15 @@ const TITLE_STOPWORDS = new Set([
   // be the ONLY shared word (many unrelated events share a city or venue).
   'napoli', 'pompei', 'caserta', 'arena', 'teatro', 'reggia', 'museo', 'palazzo',
   'piazza', 'anfiteatro', 'palapartenope', 'stadio', 'villa',
+  // Calendar words — pure noise in a title, never an identifier. Without
+  // these, "DOMENICA A CASA" merged with "Aperitivo in Floridiana: Domenica
+  // 6 Settembre" on the word "Sunday" alone.
+  'lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato', 'domenica',
+  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+  'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio',
+  'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre',
+  'january', 'february', 'march', 'april', 'june', 'july', 'august',
+  'september', 'october', 'november', 'december',
 ]);
 
 function titleTokens(title) {
@@ -218,17 +247,43 @@ function titleTokens(title) {
     .filter((w) => w.length >= 3 && !TITLE_STOPWORDS.has(w) && !/^(19|20)\d{2}$/.test(w));
 }
 
-// Same event if they share enough distinctive words (e.g. the artist name) —
-// requires at least one shared token of length >= 4 to avoid coincidental
-// short-word matches, and that overlap covers at least half of the smaller
-// title's significant words.
-function sameEvent(tokensA, tokensB) {
+// A token only counts as EVIDENCE of a match if it's rare across the batch.
+// WHY: a fixed stopword list can't anticipate every generic word. Boilerplate
+// like "business"/"networking" (16 near-identical Eventbrite listings) or
+// "domenica" (Sunday) recurs across unrelated events, and matching on those
+// merged genuinely different events. Rarity is self-tuning: an artist name
+// appears 2-4 times (once per source that lists it), whereas filler recurs.
+const RARE_MAX = 6;
+
+function buildTokenFrequency(tokenLists) {
+  const freq = new Map();
+  for (const tokens of tokenLists) {
+    for (const t of new Set(tokens)) freq.set(t, (freq.get(t) || 0) + 1);
+  }
+  return freq;
+}
+
+// Same event if they share a DISTINCTIVE word (rare in this batch, >= 4 chars
+// — typically the artist or show name) and the overlap covers enough of the
+// smaller title.
+function sameEvent(tokensA, tokensB, freq) {
   const setA = new Set(tokensA);
   const setB = new Set(tokensB);
   const shared = [...setA].filter((w) => setB.has(w));
-  if (!shared.length || !shared.some((w) => w.length >= 4)) return false;
+  if (!shared.length) return false;
+
+  const distinctive = shared.filter((w) => w.length >= 4 && (freq.get(w) ?? 0) <= RARE_MAX);
+  if (!distinctive.length) return false;
+
   const minSize = Math.min(setA.size, setB.size);
-  return minSize > 0 && shared.length / minSize >= 0.5;
+  if (!minSize) return false;
+  if (shared.length / minSize < 0.5) return false;
+
+  // Resting the whole match on ONE shared word is only safe when that word is
+  // genuinely rare (an artist or show name), not merely uncommon. Two or more
+  // distinctive hits stand on their own.
+  if (distinctive.length >= 2) return true;
+  return (freq.get(distinctive[0]) ?? 0) <= 4;
 }
 
 // Sources ranked by reliability/completeness — official ticketing platforms
@@ -264,6 +319,7 @@ export function resolveDuplicates(rows) {
   });
 
   const tokens = rows.map((r) => titleTokens(r.title));
+  const freq = buildTokenFrequency(tokens);
 
   // Union-find so matches chain transitively (A~B, B~C ⇒ one group of 3).
   const parent = rows.map((_, i) => i);
@@ -274,8 +330,11 @@ export function resolveDuplicates(rows) {
     for (let i = 0; i < idxs.length; i++) {
       for (let j = i + 1; j < idxs.length; j++) {
         const a = idxs[i], b = idxs[j];
-        if (rows[a].source === rows[b].source) continue; // same-source dupes already handled by dedupe()
-        if (sameEvent(tokens[a], tokens[b])) union(a, b);
+        // NOTE: same-source pairs are compared too. dedupe() above only catches
+        // byte-identical (source|title|date|venue) hashes, so one site listing
+        // the same show twice with the words reordered — "Cartavelina - Gaetano
+        // Coccia" vs "Gaetano Coccia in Cartavelina" — used to slip through.
+        if (sameEvent(tokens[a], tokens[b], freq)) union(a, b);
       }
     }
   }

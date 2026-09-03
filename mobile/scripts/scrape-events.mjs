@@ -37,6 +37,7 @@ import { scrapeNapoliateatro } from './scrapers/napoliateatro.mjs';
 import { scrapeNomea } from './scrapers/nomea.mjs';
 import { scrapeCampaniaEvents } from './scrapers/campaniaevents.mjs';
 import { scrapeXceed } from './scrapers/xceed.mjs';
+import { scrapeSagre } from './scrapers/sagre.mjs';
 import { scrapeStrikes } from './scrapers/strikes.mjs';
 import { scrapeNapoliMatches } from './scrapers/napoli-matches.mjs';
 
@@ -68,6 +69,7 @@ const SOURCES = [
   ['nomea',          () => scrapeNomea()],
   ['campaniaevents', () => scrapeCampaniaEvents()],
   ['xceed',          () => scrapeXceed()],
+  ['sagre',          () => scrapeSagre()],
 ];
 
 async function main() {

@@ -123,16 +123,43 @@ async function main() {
     process.exit(1);
   }
 
-  // Remove any stale copies of today's dropped duplicates that a previous run
-  // (or the old per-source-only dedup) may have already inserted.
-  for (const loser of dropped) {
-    const { error: dupErr } = await supabase
-      .from('events')
-      .delete()
-      .eq('source', loser.source)
-      .eq('external_id', loser.external_id);
-    if (dupErr) console.warn(`Duplicate cleanup warning (${loser.source}/${loser.external_id}):`, dupErr.message);
+  // ── Reconcile: delete scraped rows this run no longer produces ────────────
+  // WHY: previously the only deletion was "prune ended events", so any row
+  // whose external_id stopped being generated lived on forever. Sites tweak a
+  // title or a punctuation mark, the hash changes, a NEW row is inserted, and
+  // the old one becomes a permanent zombie duplicate — that's how the same
+  // event ended up on screen 2-3 times.
+  //
+  // Only sources that actually returned rows are reconciled: a source that
+  // failed or was skipped this run must not have its events wiped.
+  const idsBySource = new Map();
+  for (const r of rows) {
+    if (!idsBySource.has(r.source)) idsBySource.set(r.source, new Set());
+    idsBySource.get(r.source).add(r.external_id);
   }
+
+  let removed = 0;
+  for (const [src, liveIds] of idsBySource) {
+    const { data: existing, error: exErr } = await supabase
+      .from('events')
+      .select('id, external_id')
+      .eq('source', src);
+    if (exErr) { console.warn(`Reconcile (${src}) read failed:`, exErr.message); continue; }
+
+    const stale = (existing ?? [])
+      .filter((row) => row.external_id && !liveIds.has(row.external_id))
+      .map((row) => row.id);
+    if (!stale.length) continue;
+
+    // Chunked so the request URL can't blow past server limits.
+    for (let i = 0; i < stale.length; i += 100) {
+      const chunk = stale.slice(i, i + 100);
+      const { error: delErr } = await supabase.from('events').delete().in('id', chunk);
+      if (delErr) console.warn(`Reconcile (${src}) delete failed:`, delErr.message);
+      else removed += chunk.length;
+    }
+  }
+  if (removed) console.log(`Reconciled: removed ${removed} stale row(s) no longer listed by their source.`);
 
   // Prune scraped events that have ended (keep the table to "upcoming"). Admin
   // rows are left alone.

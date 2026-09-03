@@ -1,0 +1,41 @@
+name: Weekly scraper health check
+
+# Runs every source live and inspects the database, then FAILS if anything
+# looks wrong — a failed job emails Erik, which is the alert.
+#
+# WHY: silent breakage went unnoticed for weeks (TheSportsDB throttled its
+# free tier and Napoli fixtures quietly went to zero; stale rows piled up as
+# on-screen duplicates). Nothing was watching. Now something is.
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'   # Mondays 07:00 UTC (~09:00 Naples)
+  workflow_dispatch: {}    # manual "Run workflow" button
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install deps
+        run: npm ci || npm install
+
+      - name: Install Playwright Chrome (TicketOne + Dice)
+        run: npx playwright install --with-deps chrome
+
+      - name: Run health check
+        env:
+          SUPABASE_URL: https://mgpxptltgvpazhwgndqv.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EVENTBRITE_TOKEN: ${{ secrets.EVENTBRITE_TOKEN }}
+          EVENTBRITE_ORG_IDS: ${{ secrets.EVENTBRITE_ORG_IDS }}
+          BANDSINTOWN_APP_ID: ${{ secrets.BANDSINTOWN_APP_ID }}
+        run: node scripts/health-check.mjs

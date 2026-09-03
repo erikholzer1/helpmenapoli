@@ -30,27 +30,60 @@ export function haversineKm(a, b) {
 // Keyword heuristics over title + description + schema type. Returns one of the
 // 6 buckets, or null to DROP (per the rule: only events people clearly
 // understand and would slot into one of these).
+// `kw` = defining words (this word means the event IS this kind of thing).
+// `weak` = incidental words that often describe an ADD-ON rather than the
+// event itself — a kayak trip "con aperitivo", a guided tour "con degustazione".
+// Treating those as defining is what filed kayak trips and Vesuvius hikes
+// under Food & Drink.
 const CATEGORY_RULES = [
-  { cat: 'music',    type: ['MusicEvent', 'Festival'], kw: ['concert', 'concerto', 'live', 'dj', 'club', 'disco', 'gig', 'band', 'festival musicale', 'rave', 'techno', 'jazz', 'rock', 'nightlife', 'serata', 'musica'] },
-  { cat: 'theater',  type: ['TheaterEvent', 'DanceEvent', 'ScreeningEvent'], kw: ['teatro', 'theatre', 'theater', 'spettacolo', 'opera', 'balletto', 'danza', 'cinema', 'film', 'commedia', 'musical'] },
-  { cat: 'food',     type: ['FoodEvent'], kw: ['sagra', 'food', 'cibo', 'degustazione', 'tasting', 'wine', 'vino', 'birra', 'beer', 'street food', 'cena', 'gastronom', 'pizza', 'cocktail', 'aperitivo'] },
-  { cat: 'wellness', type: [], kw: ['yoga', 'meditazion', 'wellness', 'benessere', 'pilates', 'trekking', 'hiking', 'escursione', 'fitness', 'retreat', 'spa', 'massa'] },
-  { cat: 'business', type: ['BusinessEvent', 'EducationEvent'], kw: ['networking', 'business', 'startup', 'workshop', 'conferenza', 'conference', 'seminar', 'meetup', 'corso', 'formazione', 'webinar', 'pitch', 'imprend'] },
-  { cat: 'culture',  type: ['ExhibitionEvent', 'VisualArtsEvent', 'SocialEvent'], kw: ['mostra', 'exhibition', 'arte', 'art', 'museo', 'museum', 'cultura', 'cultural', 'libro', 'reading', 'presentazione', 'storia', 'guided tour', 'visita guidata'] },
+  { cat: 'music',    type: ['MusicEvent', 'Festival'],
+    kw: ['concert', 'concerto', 'dj set', 'disco', 'gig', 'festival musicale', 'rave', 'techno', 'jazz', 'rock', 'nightlife', 'musica', 'band'],
+    weak: ['live', 'dj', 'club', 'serata'] },
+  { cat: 'theater',  type: ['TheaterEvent', 'DanceEvent', 'ScreeningEvent'],
+    kw: ['teatro', 'theatre', 'theater', 'spettacolo', 'opera', 'balletto', 'danza', 'cinema', 'commedia', 'musical'],
+    weak: ['film'] },
+  { cat: 'food',     type: ['FoodEvent'],
+    kw: ['sagra', 'street food', 'degustazione', 'tasting', 'gastronom', 'enogastronom', 'cibo', 'wine festival', 'vino', 'wine', 'birra', 'beer', 'pizza', 'cena', 'mercato contadino', 'campagna amica', 'farmers market'],
+    weak: ['food', 'cocktail', 'aperitivo', 'brunch'] },
+  { cat: 'wellness', type: [],
+    kw: ['yoga', 'meditazion', 'wellness', 'benessere', 'pilates', 'trekking', 'hiking', 'escursion', 'fitness', 'retreat', 'terme', 'kayak', 'canoa', 'snorkel', 'immersione', 'passeggiata'],
+    weak: ['spa', 'massa', 'natura'] },
+  { cat: 'business', type: ['BusinessEvent', 'EducationEvent'],
+    kw: ['networking', 'startup', 'conferenza', 'conference', 'seminar', 'meetup', 'webinar', 'imprend', 'business'],
+    weak: ['workshop', 'corso', 'formazione', 'pitch'] },
+  { cat: 'culture',  type: ['ExhibitionEvent', 'VisualArtsEvent', 'SocialEvent'],
+    kw: ['mostra', 'exhibition', 'museo', 'museum', 'visita guidata', 'guided tour', 'tour guidato', 'archeolog', 'scavi', 'presentazione del libro', 'cultura'],
+    weak: ['arte', 'art', 'libro', 'reading', 'storia', 'tour', 'itinerar'] },
 ];
 
+// Scores every category instead of taking the first rule that matches, so a
+// passing mention can't outrank the event's actual subject. Title hits count
+// double — the title says what the event IS, the description merely mentions.
 export function categorize(title = '', description = '', types = []) {
-  const hay = `${title} ${description}`.toLowerCase();
-  const typeSet = new Set(types.map((t) => String(t)));
-  // 1) Strong signal: schema.org type.
+  const t = String(title).toLowerCase();
+  const d = String(description).toLowerCase();
+  const typeSet = new Set(types.map((x) => String(x)));
+
+  // schema.org type stays the strongest signal when a source provides one.
   for (const rule of CATEGORY_RULES) {
-    if (rule.type.some((t) => typeSet.has(t))) return rule.cat;
+    if (rule.type.some((x) => typeSet.has(x))) return rule.cat;
   }
-  // 2) Keyword match (music/theater/food first — most common in Naples).
+
+  let best = null;
+  let bestScore = 0;
   for (const rule of CATEGORY_RULES) {
-    if (rule.kw.some((k) => hay.includes(k))) return rule.cat;
+    let score = 0;
+    for (const k of rule.kw) {
+      if (t.includes(k)) score += 6;
+      else if (d.includes(k)) score += 3;
+    }
+    for (const k of rule.weak ?? []) {
+      if (t.includes(k)) score += 2;
+      else if (d.includes(k)) score += 1;
+    }
+    if (score > bestScore) { bestScore = score; best = rule.cat; } // ties keep rule order
   }
-  return null; // doesn't clearly fit → drop
+  return bestScore > 0 ? best : null; // nothing matched → drop
 }
 
 // Folds typographic variants to a canonical form so that strings which differ

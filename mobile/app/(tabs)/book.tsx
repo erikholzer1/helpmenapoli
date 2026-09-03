@@ -75,7 +75,8 @@ function RequestForm({ service, onClose }: RequestFormProps) {
       return;
     }
     const body = `Service: ${service.title}%0AName: ${name}%0AEmail: ${email}%0ADate: ${date}%0AGuests: ${guests}%0ANotes: ${notes}`;
-    Linking.openURL(`mailto:erikholzer1@gmail.com?subject=HelpMeNapoli — ${service.title}&body=${body}`);
+    Linking.openURL(`mailto:erikholzer1@gmail.com?subject=HelpMeNapoli — ${service.title}&body=${body}`)
+      .catch(() => Alert.alert("Couldn't open email", 'Write to help.me.napoli@gmail.com instead.'));
     onClose();
   }
 
@@ -183,7 +184,8 @@ export default function BookScreen() {
           </View>
           <TouchableOpacity
             style={styles.whatsappBtn}
-            onPress={() => Linking.openURL('https://wa.me/393331489589')}
+            onPress={() => Linking.openURL('https://wa.me/393331489589')
+              .catch(() => Alert.alert("Couldn't open WhatsApp", 'Message +39 333 148 9589 directly.'))}
           >
             <Text style={styles.whatsappBtnText}>Chat</Text>
           </TouchableOpacity>

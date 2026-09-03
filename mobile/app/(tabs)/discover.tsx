@@ -23,7 +23,10 @@ const BANNER_SCRIM = ['rgba(26,20,16,0.15)', 'rgba(26,20,16,0)', 'rgba(26,20,16,
 
 function openInMaps(spot: Spot) {
   const q = encodeURIComponent(`${spot.name} Napoli`);
-  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`);
+  // .catch: an unhandled openURL rejection throws a full-screen red error.
+  Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`).catch(() => {
+    Alert.alert("Couldn't open Maps", 'Try searching for it manually.');
+  });
 }
 
 function CategoryCard({ list, onPress, locked }: { list: DiscoverList; onPress: () => void; locked?: boolean }) {

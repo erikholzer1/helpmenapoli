@@ -1,6 +1,6 @@
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, Linking,
-  SectionList, ActivityIndicator, Image, Switch, AppState,
+  SectionList, ActivityIndicator, Image, Switch, AppState, Alert,
 } from 'react-native';
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -146,7 +146,15 @@ function CategoryBadge({ category }: { category: EventCategory }) {
 
 function EventCard({ ev }: { ev: NaplesEvent }) {
   const range = formatRangeLabel(ev);
-  const open = () => { if (ev.ticketUrl) Linking.openURL(ev.ticketUrl); };
+  // WHY the catch: openURL returns a promise that REJECTS when the OS can't
+  // handle the link, and an unhandled rejection throws a full-screen red error
+  // in the app. A dead ticket link must never take the whole screen down.
+  const open = () => {
+    if (!ev.ticketUrl) return;
+    Linking.openURL(ev.ticketUrl).catch(() => {
+      Alert.alert("Couldn't open link", 'That link seems to be unavailable right now.');
+    });
+  };
   return (
     <TouchableOpacity style={styles.card} onPress={open} activeOpacity={0.85} disabled={!ev.ticketUrl}>
       {ev.imageUrl ? (
